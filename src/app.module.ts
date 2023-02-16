@@ -22,10 +22,10 @@ import { NotifyModule } from './modules/notify/notify.module';
     TypeOrmModule.forRoot({
       type: 'mariadb',
       host: process.env.DB_HOST || 'localhost',
-      port: +process.env.DB_PORT || 3307,
+      port: +process.env.DB_PORT || 3306,
       username: process.env.DB_USERNAME || 'root',
-      password: process.env.DB_PASSWORD || '123456',
-      database: process.env.DB_NAME || 'appointment_dev',
+      password: process.env.DB_PASSWORD || 'admin123',
+      database: process.env.DB_NAME || 'charmsta',
       charset: 'utf8mb4',
       entities: [__dirname + '/**/**.entity{.ts,.js}'],
       synchronize: true,
