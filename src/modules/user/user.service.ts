@@ -218,20 +218,11 @@ export class UserService {
     return companyStore;
   }
 
-  async createToken(user: UserEntity, storeId?: number): Promise<TokenData> {
-    // let _storeId = storeId ? storeId : null;
-    // if (!storeId) {
-    //   const store = await StoreEntity.createQueryBuilder('store').where('store.companyId = :companyId', { companyId: user.companyId }).getOne();
-    //   if (store) _storeId = store.id;
-    // }
-    const store = await StoreEntity.createQueryBuilder('store').where('store.companyId = :companyId', { companyId: user.companyId }).getOne();
-
-    let _storeId = store.id;
-
+  async createToken(user: UserEntity, storeId?: number) {
     const dataStoredInToken: DataStoredInToken = {
       userId: user.id,
       companyId: user.company?.id ? user.company?.id : user.companyId,
-      storeId: _storeId,
+      storeId: storeId,
       roleIds: user.permissionIds,
     };
 
@@ -558,8 +549,8 @@ export class UserService {
         //   // }
         // }
 
-
-        return this.buildUserRO(_user.email);
+        const store = await StoreEntity.createQueryBuilder('store').where("store.companyId = :companyId", { companyId: _user.company.id }).getOne();
+        return this.buildUserRO(_user.email, store.id);
       }
     }
     //deprecated
@@ -612,7 +603,7 @@ export class UserService {
     newUser.companyId = companyId;
 
     // const store = await this.createStore(companyId, dto.store)
-    await this.createStore(companyId, dto.store)
+    const store = await this.createStore(companyId, dto.store)
 
     if (socialSignup) {
       newUser.facebookId = socialSignup.isFacebook ? socialSignup.decodedToken : undefined;
@@ -636,7 +627,7 @@ export class UserService {
         }
       }
 
-      return this.buildUserRO(savedUser.email)
+      return this.buildUserRO(savedUser.email, store.id)
     }
   }
 
@@ -661,9 +652,9 @@ export class UserService {
     return store;
   }
 
-  private async buildUserRO(email: string) {
+  private async buildUserRO(email: string, storeId?: number) {
     const _user = await this.findOne(email)
-    const token = await this.createToken(_user)
+    const token = await this.createToken(_user, storeId)
 
     const userRO = {
       ..._user,
