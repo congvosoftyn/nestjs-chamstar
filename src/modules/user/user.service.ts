@@ -652,6 +652,13 @@ export class UserService {
       subDomain: storeDomainName,
     });
 
+
+    CompanySettingEntity.save(<CompanySettingEntity>{companyId: companyId})
+   
+    AppointmentSettingEntity.save(<AppointmentSettingEntity>{storeId: store.id})
+
+    StoreSettingEntity.save(<StoreSettingEntity>{storeId: store.id})
+
     return store;
   }
 
