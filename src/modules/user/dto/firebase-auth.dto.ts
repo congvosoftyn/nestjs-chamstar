@@ -13,5 +13,5 @@ export class FirebaseAuthDto {
     tenantId?: string;
     uid?: string;
     deviceToken?: string
-    store: CreateStoreDto;
+    store?: CreateStoreDto;
 }

@@ -3,20 +3,13 @@ import { IsString } from 'class-validator';
 import { CreateAccountDto } from './create-account.dto';
 
 export class CreateStoreDto {
-  @IsString()
-  name: string;
-  @IsString()
-  address: string;
-  @IsString()
-  city: string;
-  @IsString()
-  state: string;
-  @IsString()
-  zipcode: string;
-  @IsString()
-  categories: string;
-  @IsString()
-  phoneNumber: string;
+  name: string = '';
+  address: string = '';
+  city: string = '';
+  state: string = '';
+  zipcode: string = '';
+  categories: string = '';
+  phoneNumber: string = '';
 }
 
 export class CreateUserDto extends PartialType(CreateAccountDto) {

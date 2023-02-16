@@ -157,7 +157,7 @@ export class StoreEntity extends BaseEntity {
     @Field(() => [TagEntity])
     tags: TagEntity[];
 
-    @Index({ unique: true, where: "subDomain IS NOT NULL" })
+    @Index({ where: "subDomain IS NOT NULL" })
     @Column({ nullable: true })
     @Field(() => String)
     subDomain: string;
