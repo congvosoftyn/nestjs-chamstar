@@ -51,20 +51,20 @@ export class StoreService {
         }
     }
 
-    async getStore(id: number, _storeId: number) {
+    async getStore(id: number, _storeId?: number) {
         const storeId = id || _storeId;
         const store = await StoreEntity.findOne({ where: { id: storeId }, relations: ['openHours', 'appointmentSetting'] });
-        if (!store.subDomain) {
-            let storeDomainName = store.name.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "");
-            const similarStoreNames = await StoreEntity.createQueryBuilder("store")
-                .where("store.subDomain LIKE :storeDomainName", { storeDomainName: `${storeDomainName}%` })
-                .getCount();
+        // if (!store.subDomain) {
+        //     let storeDomainName = store.name.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "");
+        //     const similarStoreNames = await StoreEntity.createQueryBuilder("store")
+        //         .where("store.subDomain LIKE :storeDomainName", { storeDomainName: `${storeDomainName}%` })
+        //         .getCount();
 
-            if (similarStoreNames > 0) storeDomainName = storeDomainName + similarStoreNames;
+        //     if (similarStoreNames > 0) storeDomainName = storeDomainName + similarStoreNames;
 
-            store.subDomain = storeDomainName;
-            await StoreEntity.save(store);
-        }
+        //     store.subDomain = storeDomainName;
+        //     await StoreEntity.save(store);
+        // }
         if (store && store.openHours.length == 0) {
             for (let i = 0; i < 7; i++) {
                 const openHour = <OpenHourEntity>{

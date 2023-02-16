@@ -635,21 +635,21 @@ export class UserService {
 
     const secretKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-    let storeDomainName = body ? body.name : '';
-    if (storeDomainName) {
-      storeDomainName = body?.name?.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "");
-      const similarStoreNames = await StoreEntity.createQueryBuilder("store")
-        .where("store.subDomain LIKE :storeDomainName", { storeDomainName: `${storeDomainName}%` })
-        .getCount();
+    // let storeDomainName = body ? body.name : 'string';
+    // if (storeDomainName) {
+    //   storeDomainName = body?.name?.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "");
+    //   const similarStoreNames = await StoreEntity.createQueryBuilder("store")
+    //     .where("store.subDomain LIKE :storeDomainName", { storeDomainName: `${storeDomainName}%` })
+    //     .getCount();
 
-      if (similarStoreNames > 0) storeDomainName = storeDomainName + similarStoreNames;
-    }
+    //   if (similarStoreNames > 0) storeDomainName = storeDomainName + similarStoreNames;
+    // }
 
     const store = await StoreEntity.save(<StoreEntity>{
       name: body ? body.name ? body.name : 'string' : 'string',
       companyId: companyId,
       secretKey: secretKey,
-      subDomain: storeDomainName,
+      // subDomain: storeDomainName,
     });
 
 
