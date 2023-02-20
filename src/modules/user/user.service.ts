@@ -734,15 +734,6 @@ export class UserService {
 
     store.save();
 
-    // create AppointmentSetting
-    const appSetting = new AppointmentSettingEntity();
-    appSetting.storeId = store.id;
-    appSetting.save();
-
-    const storeSetting = new StoreSettingEntity();
-    storeSetting.storeId = store.id;
-    storeSetting.save();
-
     return CompanyEntity.save(company);
   }
 
