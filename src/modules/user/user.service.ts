@@ -219,10 +219,13 @@ export class UserService {
   }
 
   async createToken(user: UserEntity, storeId?: number) {
+    let store = await StoreEntity.createQueryBuilder('store').where("store.companyId = :id", { id: user.companyId }).getOne();
+    let _storeId = storeId ? storeId : store.id;
+
     const dataStoredInToken: DataStoredInToken = {
       userId: user.id,
       companyId: user.company?.id ? user.company?.id : user.companyId,
-      storeId: storeId,
+      storeId: _storeId,
       roleIds: user.permissionIds,
     };
 
@@ -653,11 +656,11 @@ export class UserService {
     });
 
 
-    CompanySettingEntity.save(<CompanySettingEntity>{companyId: companyId})
-   
-    AppointmentSettingEntity.save(<AppointmentSettingEntity>{storeId: store.id})
+    CompanySettingEntity.save(<CompanySettingEntity>{ companyId: companyId })
 
-    StoreSettingEntity.save(<StoreSettingEntity>{storeId: store.id})
+    AppointmentSettingEntity.save(<AppointmentSettingEntity>{ storeId: store.id })
+
+    StoreSettingEntity.save(<StoreSettingEntity>{ storeId: store.id })
 
     return store;
   }
