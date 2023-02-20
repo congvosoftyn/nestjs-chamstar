@@ -635,18 +635,7 @@ export class UserService {
   }
 
   async createStore(companyId: number, body: CreateStoreDto) {
-
     const secretKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-    // let storeDomainName = body ? body.name : 'string';
-    // if (storeDomainName) {
-    //   storeDomainName = body?.name?.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "");
-    //   const similarStoreNames = await StoreEntity.createQueryBuilder("store")
-    //     .where("store.subDomain LIKE :storeDomainName", { storeDomainName: `${storeDomainName}%` })
-    //     .getCount();
-
-    //   if (similarStoreNames > 0) storeDomainName = storeDomainName + similarStoreNames;
-    // }
 
     const store = await StoreEntity.save(<StoreEntity>{
       name: body ? body.name ? body.name : 'string' : 'string',
@@ -732,6 +721,28 @@ export class UserService {
     company.categories = updatecompany.categories;
     company.phoneNumber = updatecompany.phoneNumber;
     company.isActive = false;
+
+    let store = await StoreEntity.findOne({ where: { companyId: id } });
+    store.name = updatecompany.name;
+    store.address = updatecompany.address;
+    store.city = updatecompany.city;
+    store.state = updatecompany.state;
+    store.zipcode = updatecompany.zipcode;
+    store.categories = updatecompany.categories;
+    store.phoneNumber = updatecompany.phoneNumber;
+    store.secretKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+    store.save();
+
+    // create AppointmentSetting
+    const appSetting = new AppointmentSettingEntity();
+    appSetting.storeId = store.id;
+    appSetting.save();
+
+    const storeSetting = new StoreSettingEntity();
+    storeSetting.storeId = store.id;
+    storeSetting.save();
+
     return CompanyEntity.save(company);
   }
 
