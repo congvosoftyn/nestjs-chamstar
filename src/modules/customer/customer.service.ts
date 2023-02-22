@@ -121,8 +121,8 @@ export class CustomerService {
   }
 
   async getCustomers(_getCustomer: GetCustomerDto, companyId: number) {
-    const skip: number = _getCustomer.skip ? +_getCustomer.skip : 0;
-    const take: number = _getCustomer.take ? +_getCustomer.take : 10;
+    const page: number = _getCustomer.skip ? +_getCustomer.skip : 0;
+    const size: number = _getCustomer.take ? +_getCustomer.take : 10;
     const search: string = _getCustomer.search;
 
     let cCustomers = await CompanyCustomerEntity.find({ where: { companyId: companyId }, select: ["id", "customerId", "companyId"] });
@@ -132,8 +132,8 @@ export class CustomerService {
       .leftJoinAndSelect('customer.addresses', 'addresses')
       .leftJoinAndSelect('customer.companyCustomer', 'cCustomer')
       .where('customer.id in (:id)', { id: customerIds })
-      .take(take)
-      .skip(skip);
+      .take(size)
+      .skip(page * size)
 
     if (search) {
       query = query.andWhere("(customer.firstName LIKE :keywork OR customer.lastName LIKE :keywork OR customer.phoneNumber LIKE :keywork)", { keywork: `%${search}%` })
