@@ -47,9 +47,9 @@ export class BookingService {
             .leftJoinAndSelect('booking.customer', 'customer')
             .leftJoin('customer.companyCustomer', 'companyCustomer', 'companyCustomer.companyId = :companyId', { companyId })
             .leftJoinAndSelect('booking.bookingInfo', 'bookingInfo')
-            .leftJoinAndSelect('bookingInfo.service', 'service','service.isService = true')
+            .leftJoinAndSelect('bookingInfo.service', 'service', 'service.isService = true')
             .leftJoinAndSelect('bookingInfo.packages', 'packages')
-            .leftJoinAndSelect('packages.services', '_services','_services.isService = true')
+            .leftJoinAndSelect('packages.services', '_services', '_services.isService = true')
             .leftJoinAndSelect('bookingInfo.staff', 'staff')
             .leftJoinAndSelect("booking.label", "label")
             .orderBy({ date: 'ASC' })
@@ -110,12 +110,12 @@ export class BookingService {
 
     async findByBooking(id: number) {
         const booking = await AppointmentBookingEntity.createQueryBuilder('booking')
-            .leftJoinAndSelect("booking.bookingInfo", "bookingInfo", "bookingInfo.deleted = true")
-            .leftJoinAndSelect("bookingInfo.service", "service","service.isService = true")
+            .leftJoinAndSelect("booking.bookingInfo", "bookingInfo")
+            .leftJoinAndSelect("bookingInfo.service", "service", "service.isService = true")
             .leftJoinAndSelect("service.tax", "tax")
             .leftJoinAndSelect("bookingInfo.staff", "staff")
             .leftJoinAndSelect("bookingInfo.packages", "packages")
-            .leftJoinAndSelect("packages.services", "_services","_services.isService = true")
+            .leftJoinAndSelect("packages.services", "_services", "_services.isService = true")
             .leftJoinAndSelect("booking.label", "label")
             .leftJoinAndSelect("booking.customer", "customer")
             .where('booking.id = :id', { id })
@@ -187,7 +187,7 @@ export class BookingService {
         return AppointmentBookingEntity.find({ where: { storeId, customerId: id }, order: { date: 'DESC' } })
     }
 
-    async updateAppointment(bookingId: number, booking: UpdateBookingDto, userId:number) {
+    async updateAppointment(bookingId: number, booking: UpdateBookingDto, userId: number) {
         let services = booking.services ? booking.services : [];
         let packages = booking.packages ? booking.packages : [];
 

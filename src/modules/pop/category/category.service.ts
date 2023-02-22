@@ -11,7 +11,9 @@ export class CategoryService {
   async getAllCategoriesByStore(storeId: number, search: string) {
     const categories = await ProductCategoryEntity
       .createQueryBuilder('category')
-      .leftJoinAndSelect("category.services", "services", "services.isService = true AND services.isActive = true ", )
+      .leftJoinAndSelect("category.services", "services", "services.isService = true AND services.isActive = true ")
+      .leftJoinAndSelect("services.staffs", "staffs")
+      .leftJoinAndSelect("services.tax", "tax")
       .leftJoinAndSelect("category.packages", "packages", "packages.deleted = true")
       .leftJoin("packages.services", "_services", "_services.isService = true")
       .addSelect(["_services.serviceDuration", "_services.name", "_services.id"])
@@ -66,6 +68,7 @@ export class CategoryService {
     return ProductCategoryEntity.createQueryBuilder('category')
       .leftJoinAndSelect("category.services", "services")
       .leftJoinAndSelect("services.staffs", "staffs")
+      .leftJoinAndSelect("services.tax", "tax")
       .where("category.id = :id", { id })
       .andWhere("category.isActive = true")
       .getOne()
