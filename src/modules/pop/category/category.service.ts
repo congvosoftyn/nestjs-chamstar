@@ -65,6 +65,7 @@ export class CategoryService {
   async getCategory(id: number) {
     return ProductCategoryEntity.createQueryBuilder('category')
       .leftJoinAndSelect("category.services", "services")
+      .leftJoinAndSelect("services.staffs", "staffs")
       .where("category.id = :id", { id })
       .andWhere("category.isActive = true")
       .getOne()
