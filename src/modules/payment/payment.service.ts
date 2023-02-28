@@ -3,7 +3,6 @@ import { BillingEntity } from 'src/entities/Billing.entity';
 import { CompanyEntity } from 'src/entities/Company.entity';
 import { PaymentEntity } from 'src/entities/Payment.entity';
 import { SiteSettingEntity } from 'src/entities/SiteSetting.entity';
-import { StripesService } from '../stripes/stripes.service';
 import { AddNewCardDto } from './dto/AddNewCard.dto';
 import { ChargePaymentDto } from './dto/ChargePayment.dto';
 import { PaymentGateway } from './payment.gateway';
@@ -12,7 +11,6 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 @Injectable()
 export class PaymentService {
   constructor(
-    private stripesService: StripesService,
     @Inject(forwardRef(() => PaymentGateway))
     private paymentGateway: PaymentGateway,
   ) { }
@@ -89,48 +87,6 @@ export class PaymentService {
     }
   };
 
-  // async chargePayment(body: ChargePaymentDto, companyId: number, userId: number,) {
-  //   const { amount, billId, card, token } = body;
-  //   const paymentGateway = await this.checkPaymentGateway();
-
-  //   if (paymentGateway.value === 'stripe') {
-  //     const charge = token ? await this.stripesService.createACharge(token, amount, companyId, userId,) : await this.stripesService.createACustomerCharge(card, amount, companyId, userId,);
-  //     if (charge) {
-  //       if (charge.status !== 'succeeded') throw new HttpException('Payment is not succeeded', HttpStatus.PAYMENT_REQUIRED,);
-
-  //       const payment = new PaymentEntity();
-  //       payment.stripeId = charge.id;
-  //       payment.amount = charge.amount / 100;
-  //       payment.payment_method = charge.source.object;
-  //       payment.billingId = billId;
-
-  //       if (charge.payment_method_details.type === 'card') {
-  //         payment.card_brand = charge.payment_method_details.card.brand;
-  //         payment.exp_month = charge.payment_method_details.card.exp_month;
-  //         payment.exp_year = charge.payment_method_details.card.exp_year;
-  //         payment.last4 = charge.payment_method_details.card.last4;
-  //       }
-  //       payment.status = charge.status;
-  //       await payment.save();
-
-  //       const bill: BillingEntity = await BillingEntity.findOneBy({ id: billId });
-  //       if (bill) {
-  //         bill.isPaid = true;
-  //         bill.paid = +bill.paid + charge.amount;
-  //         await bill.save();
-  //         const company = await CompanyEntity.findOneBy({ id: companyId });
-  //         company.balance = +company.balance - payment.amount;
-  //         await company.save();
-  //         this.paymentGateway.notifyPayment(companyId, 'billPaid', billId);
-  //       }
-  //       return charge;
-  //     } else {
-  //       throw Error('Payment is not succeeded');
-  //     }
-  //   } else {
-  //     throw new HttpException('No payment gateway installed', HttpStatus.NOT_FOUND,);
-  //   }
-  // };
 
   private async checkPaymentGateway() {
     let paymentGateway = await SiteSettingEntity.findOne({ where: { key: 'paymentGateway' }, });

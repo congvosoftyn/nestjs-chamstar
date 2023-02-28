@@ -105,4 +105,4 @@ dist
 schema.gql
 yarn.lock
 .DS_Store
-app.module.ts
+src/app.module.ts
