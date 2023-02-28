@@ -48,45 +48,6 @@ export class PaymentService {
     return { items: payments, totalCount: total };
   }
 
-  async addNewCard(body: AddNewCardDto, companyId: number) {
-    const company = await CompanyEntity.findOneBy({ id: companyId });
-    const paymentGateway = await this.checkPaymentGateway();
-    const { token, autoPay } = body;
-    if (paymentGateway.value === 'stripe') {
-      if (!company.stripeCustomerId) {
-        const stripeCustomer = await this.stripesService.createCustomer(companyId,);
-        company.stripeCustomerId = stripeCustomer.id;
-        await company.save();
-      }
-      const card = await this.stripesService.addCardToCustomer(companyId, token,);
-      if (autoPay) {
-        await this.stripesService.updateDefaultCard(companyId, card.id);
-      }
-      return card;
-    } else {
-      throw new NotFoundException('No payment gateway installed');
-    }
-  };
-
-  listCard = async (companyId: number) => {
-    const paymentGateway = await this.checkPaymentGateway();
-
-    if (paymentGateway.value === 'stripe') {
-      return await this.stripesService.listCards(companyId);
-    } else {
-      throw new NotFoundException('No payment gateway installed');
-    }
-  };
-
-  async listBankAccount(companyId: number) {
-    const paymentGateway = await this.checkPaymentGateway();
-    if (paymentGateway.value === 'stripe') {
-      return await this.stripesService.listBankAccount(companyId);
-    } else {
-      throw new NotFoundException('No payment gateway installed');
-    }
-  };
-
 
   private async checkPaymentGateway() {
     let paymentGateway = await SiteSettingEntity.findOne({ where: { key: 'paymentGateway' }, });

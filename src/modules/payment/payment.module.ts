@@ -6,7 +6,6 @@ import { PaymentEntity } from 'src/entities/Payment.entity';
 import { SiteSettingEntity } from 'src/entities/SiteSetting.entity';
 import { PaymentController } from './payment.controller';
 import { PaymentGateway } from './payment.gateway';
-import { PaymentResolver } from './payment.resolver';
 import { PaymentService } from './payment.service';
 
 @Module({
@@ -14,6 +13,6 @@ import { PaymentService } from './payment.service';
     TypeOrmModule.forFeature([BillingEntity, CompanyEntity, PaymentEntity, SiteSettingEntity])
   ],
   controllers: [PaymentController],
-  providers: [PaymentService, PaymentGateway, PaymentResolver]
+  providers: [PaymentService, PaymentGateway]
 })
 export class PaymentModule { }
