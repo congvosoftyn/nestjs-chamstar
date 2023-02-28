@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PackageCategoryEntity } from 'src/entities/package-category.entity';
+import { PackageEntity } from 'src/entities/Package.entity';
 import { ProductEntity } from 'src/entities/Product.entity';
-import { ProductCategoryEntity } from 'src/entities/ProductCategory.entity';
+import { CategoryEntity } from 'src/entities/Category.entity';
 import { NewCategoryDto } from './dto/NewCategory.dto';
 import { QueryServiceByCategoryDto } from './dto/query-service-by-category.dto';
 import { UpdateServicesByCategoryDto } from './dto/update-service-by-categories.dto';
@@ -9,7 +9,7 @@ import { UpdateServicesByCategoryDto } from './dto/update-service-by-categories.
 @Injectable()
 export class CategoryService {
   async getAllCategoriesByStore(storeId: number, search: string) {
-    const categories = await ProductCategoryEntity
+    const categories = await CategoryEntity
       .createQueryBuilder('category')
       .leftJoinAndSelect("category.services", "services", "services.isService = true AND services.isActive = true ")
       .leftJoinAndSelect("services.staffs", "staffs")
@@ -31,7 +31,7 @@ export class CategoryService {
   }
 
   getAllCategoriesForCart(storeId: number) {
-    return ProductCategoryEntity.createQueryBuilder('category')
+    return CategoryEntity.createQueryBuilder('category')
       .leftJoinAndSelect('category.services', 'services', 'services.isActive = true',)
       .leftJoinAndSelect('services.taxes', 'taxes')
       .leftJoinAndSelect('services.productOptions', 'productOptions')
@@ -44,28 +44,28 @@ export class CategoryService {
       .getMany();
   }
 
-  convertPackageInServices(category: ProductCategoryEntity) {
+  convertPackageInServices(category: CategoryEntity) {
     const packages = category.packages.map((pack) => ({
       ...pack,
       duration: pack.services?.reduce((a, b) => a + b.serviceDuration, 0),
       // price: pack.services?.reduce((a, b) => a + parseFloat(b.price.toString()), 0)
     }))
-    category.packages = packages as unknown as [PackageCategoryEntity]
+    category.packages = packages as unknown as [PackageEntity]
     return category;
   }
 
   newCategory(body: NewCategoryDto, storeId: number) {
-    return ProductCategoryEntity.save(<ProductCategoryEntity>{ ...body, storeId });
+    return CategoryEntity.save(<CategoryEntity>{ ...body, storeId });
   }
 
   async updateCategory(id: number, body: NewCategoryDto) {
-    let category = await ProductCategoryEntity.findOne({ where: { id } });
+    let category = await CategoryEntity.findOne({ where: { id } });
     category.name = body.name;
-    return ProductCategoryEntity.save(category);
+    return CategoryEntity.save(category);
   }
 
   async getCategory(id: number) {
-    return ProductCategoryEntity.createQueryBuilder('category')
+    return CategoryEntity.createQueryBuilder('category')
       .leftJoinAndSelect("category.services", "services")
       .leftJoinAndSelect("services.staffs", "staffs")
       .leftJoinAndSelect("services.tax", "tax")
@@ -119,6 +119,6 @@ export class CategoryService {
 
   deleteCategory(categoryId: number, storeId: number,) {
     ProductEntity.createQueryBuilder().update({ categoryId: null }).where("categoryId = :categoryId", { categoryId }).execute()
-    return ProductCategoryEntity.createQueryBuilder().update({ isActive: false }).where("id = :id and storeId = :storeId", { id: categoryId, storeId }).execute()
+    return CategoryEntity.createQueryBuilder().update({ isActive: false }).where("id = :id and storeId = :storeId", { id: categoryId, storeId }).execute()
   }
 }

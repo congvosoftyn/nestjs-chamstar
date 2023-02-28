@@ -1,10 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, OneToOne, ManyToOne, JoinColumn, CreateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, OneToOne, CreateDateColumn } from "typeorm";
 import { UserEntity } from "./User.entity";
 import { CompanyCustomerEntity } from "./CompanyCustomer.entity";
 import { CompanySettingEntity } from "./CompanySetting.entity";
 import { StoreEntity } from "./Store.entity";
-import { ResellerEntity } from "./Reseller.entity";
-import { SubscriptionEntity } from "./Subscription.entity";
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 
 @ObjectType('Company')
@@ -72,22 +70,9 @@ export class CompanyEntity extends BaseEntity {
     @Field(() => [StoreEntity])
     store: StoreEntity[];
 
-    @OneToMany(type => SubscriptionEntity, subs => subs.company)
-    @Field(() => [SubscriptionEntity])
-    subscription: SubscriptionEntity[];
-
     @Column({ nullable: true }) //TODO add select to false to use only internal
     @Field({ nullable: true })
     stripeCustomerId: string;
-
-    @ManyToOne(type => ResellerEntity, reseller => reseller.company, { nullable: true })
-    @JoinColumn({ name: 'resellerId' })
-    @Field(() => ResellerEntity)
-    reseller: ResellerEntity;
-
-    @Column({ type: 'int', nullable: true })
-    @Field(() => Int, { nullable: true })
-    resellerId: number;
 
     @CreateDateColumn({ precision: null, type: "timestamp" })
     @Field(() => Date)

@@ -125,13 +125,6 @@ export class CustomerController {
     return this.customerService.contactUs(body, customerId);
   }
 
-  @Get('/favor-store')
-  @ApiBearerAuth('customer-token')
-  @UseGuards(JwtCustomerAuthGuard)
-  async getFavorStore(@UserCustomer('customerId') customerId: number) {
-    return this.customerService.getFavorStore(customerId)
-  }
-
   @Post('/favor-store')
   @ApiBearerAuth('customer-token')
   @UseGuards(JwtCustomerAuthGuard)

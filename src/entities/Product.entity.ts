@@ -1,13 +1,10 @@
-import { BaseEntity, Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, } from 'typeorm';
-import { ModifierEntity } from './Modifier.entity';
-import { ProductCategoryEntity } from './ProductCategory.entity';
-import { ProductOptionEntity } from './ProductOption.entity';
+import { BaseEntity, Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, } from 'typeorm';
+import { CategoryEntity } from './Category.entity';
 import { StaffEntity } from './Staff.entity';
 import { StoreEntity } from './Store.entity';
-import { SupplierEntity } from './Supplier.entity';
 import { TaxEntity } from './Tax.entity';
 import { ObjectType, Field, Int, InputType, Float } from '@nestjs/graphql';
-import { PackageCategoryEntity } from './package-category.entity';
+import { PackageEntity } from './Package.entity';
 import { AppointmentInfoEntity } from './AppointmentInfo.entity';
 import { BillingDetailEntity } from './BillingDetailt.entity';
 
@@ -103,15 +100,6 @@ export class ProductEntity extends BaseEntity {
   @Field(() => Int)
   storeId: number;
 
-  // @ManyToOne((type) => SupplierEntity, { onDelete: 'CASCADE' })
-  // @JoinColumn({ name: 'suppilerId' })
-  // @Field(() => SupplierEntity)
-  // supplier: SupplierEntity;
-
-  // @Column({ type: 'int', nullable: true })
-  // @Field(() => Int, { nullable: true })
-  // suppilerId: number;
-
   @ManyToOne((type) => TaxEntity, (tax) => tax.products, { cascade: ['insert', 'update'], })
   @Field(() => TaxEntity)
   @JoinColumn({ name: 'taxId' })
@@ -121,18 +109,9 @@ export class ProductEntity extends BaseEntity {
   @Field(() => Int)
   taxId: number;
 
-  @OneToMany((type) => ProductOptionEntity, (m) => m.product, { cascade: ['insert', 'update'], })
-  @Field(() => [ProductOptionEntity])
-  productOptions: ProductOptionEntity[];
-
-  @ManyToMany((type) => ModifierEntity, (modifier) => modifier.products)
-  @JoinTable()
-  @Field(() => [ModifierEntity])
-  modifiers: ModifierEntity[];
-
-  @ManyToOne((type) => ProductCategoryEntity, (category) => category.services)
-  @Field(() => ProductCategoryEntity)
-  category: ProductCategoryEntity;
+  @ManyToOne((type) => CategoryEntity, (category) => category.services)
+  @Field(() => CategoryEntity)
+  category: CategoryEntity;
 
   @Column({ type: 'int', nullable: true })
   @Field(() => Int, { nullable: true })
@@ -142,9 +121,9 @@ export class ProductEntity extends BaseEntity {
   @Field(() => [StaffEntity])
   staffs: StaffEntity[];
 
-  @ManyToMany((type) => PackageCategoryEntity)
-  @Field(() => [PackageCategoryEntity])
-  packageCategory: PackageCategoryEntity[];
+  @ManyToMany((type) => PackageEntity)
+  @Field(() => [PackageEntity])
+  packageCategory: PackageEntity[];
 
   @Field(() => [AppointmentInfoEntity])
   @OneToMany(() => AppointmentInfoEntity, info => info.service)

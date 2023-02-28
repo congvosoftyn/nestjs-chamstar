@@ -1,7 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductEntity } from 'src/entities/Product.entity';
-import { ProductCategoryEntity } from 'src/entities/ProductCategory.entity';
-import { ProductOptionEntity } from 'src/entities/ProductOption.entity';
 import { NewProductDto } from './dto/NewProduct.dto';
 import { ReOrderProductsDto } from './dto/ReOrderProducts.dto';
 import { UpdateOrderByIdDto } from './dto/UpdateOrderById.dto';
@@ -43,7 +41,7 @@ export class ProductService {
     }
 
     async updateProduct(id: number, body: NewProductDto, storeId: number) {
-        await ProductEntity.createQueryBuilder().update(<ProductEntity>{ ...body, modifiers: undefined, productOptions: undefined }).where("id = :id and storeId = :storeId", { id, storeId }).execute()
+        await ProductEntity.createQueryBuilder().update(<ProductEntity>{ ...body}).where("id = :id and storeId = :storeId", { id, storeId }).execute()
         return ProductEntity.createQueryBuilder("product").leftJoinAndSelect('product.tax', 'tax').where("product.id = :id and product.storeId = :storeId", { id, storeId }).getOne()
     }
 

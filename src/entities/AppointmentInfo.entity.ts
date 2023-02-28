@@ -3,7 +3,7 @@ import { ObjectType, Field, Int, InputType, Float } from '@nestjs/graphql';
 import { AppointmentBookingEntity } from './AppointmentBooking.entity';
 import { ProductEntity } from './Product.entity';
 import { StaffEntity } from './Staff.entity';
-import { PackageCategoryEntity } from './package-category.entity';
+import { PackageEntity } from './Package.entity';
 
 @ObjectType('AppointmentInfo')
 @InputType('AppointmentInfoInput')
@@ -40,10 +40,10 @@ export class AppointmentInfoEntity extends BaseEntity {
   @Field(() => Int)
   staffId: number;
 
-  @Field(() => [PackageCategoryEntity] || null, { nullable: true })
-  @ManyToOne(() => PackageCategoryEntity, pack => pack.bookingInfo)
+  @Field(() => [PackageEntity] || null, { nullable: true })
+  @ManyToOne(() => PackageEntity, pack => pack.bookingInfo)
   @JoinColumn({ name: 'packageId' })
-  packages: PackageCategoryEntity;
+  packages: PackageEntity;
 
   @Column({ type: 'int', nullable: true })
   @Field(() => Int, { nullable: true })

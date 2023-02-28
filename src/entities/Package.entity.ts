@@ -1,13 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, BaseEntity, Column, OneToMany, ManyToMany, JoinTable } from "typeorm";
-import { SiteModuleEntity } from "./SiteModule.entity";
-import { SubscriptionEntity } from "./Subscription.entity";
-import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType, Float } from "@nestjs/graphql";
+import { BaseEntity, Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { AppointmentInfoEntity } from "./AppointmentInfo.entity";
+import { ProductEntity } from "./Product.entity";
+import { CategoryEntity } from "./Category.entity";
 
-@ObjectType('Package')
-@InputType('PackageInput')
-@Entity('package')
+@ObjectType('PackageCategory')
+@InputType('PackageCategoryInput')
+@Entity({ name: "package_category" })
 export class PackageEntity extends BaseEntity {
-
     @PrimaryGeneratedColumn()
     @Field(() => Int)
     id: number;
@@ -16,74 +16,29 @@ export class PackageEntity extends BaseEntity {
     @Field()
     name: string;
 
-    @Column("decimal", { precision: 11, scale: 2 })
+    @ManyToMany(() => ProductEntity, product => product.packageCategory)
+    @Field(() => [ProductEntity] || null, {nullable: true})
+    @JoinTable()
+    services: [ProductEntity]
+
+    @ManyToOne(() => CategoryEntity)
+    @Field(() => CategoryEntity)
+    @JoinColumn({ name: 'categoryId' })
+    category: CategoryEntity;
+
+    @Column({ type: "int" })
     @Field(() => Int)
+    categoryId: number;
+
+    @Column()
+    @Field(() => Float)
     price: number;
 
-    @Column({ default: 500 })
-    @Field(() => Int, { defaultValue: 500 })
-    messageUsage: number;
+    @Column({ default: true, type: "boolean" })
+    @Field({ defaultValue: true })
+    deleted: boolean;
 
-    @Column({ default: 30 })
-    @Field(() => Int, { defaultValue: 30 })
-    billingCycle: number; //Days
-
-    @Column({ default: true })
-    @Field(() => Boolean, { defaultValue: true })
-    isAutoRenew: boolean;
-
-    @Column({ default: false })
-    @Field(() => Boolean, { defaultValue: false })
-    isUpgradable: boolean;
-
-    @Column({ default: false })
-    @Field(() => Boolean, { defaultValue: false })
-    isAutoUpgrade: boolean;
-
-    @Column({ default: 1 })
-    @Field(() => Int, { defaultValue: 1 })
-    autoUpgradeAfter: number;  // Billing cirlce
-
-    // @Column({default: false})
-    // loyaltyIncluded: boolean;
-
-    // @Column({default: false})
-    // posIncluded:boolean;
-
-    // @Column({default: false})
-    // bookingIncluded:boolean;
-
-    @Column({ default: 0 })
-    @Field(() => Int, { defaultValue: 0 })
-    autoUpgradePackageId: number;
-
-    @Column({ default: true })
-    @Field(() => Boolean, { defaultValue: true })
-    isActive: boolean;
-
-    @Column({ default: false })
-    @Field(() => Boolean, { defaultValue: false })
-    isDefault: boolean;
-
-    @Column({ default: false })
-    @Field(() => Boolean, { defaultValue: false })
-    isHidden: boolean;
-
-    @Column({ default: 0 })
-    @Field(() => Int, { defaultValue: 0 })
-    orderBy: number;
-
-    @Column({ nullable: true })
-    @Field(() => String, { nullable: true })
-    description: string;
-
-    @OneToMany(type => SubscriptionEntity, subs => subs.package)
-    @Field(() => [SubscriptionEntity])
-    subscription: SubscriptionEntity[];
-
-    @ManyToMany(type => SiteModuleEntity, m => m.packages)
-    @JoinTable()
-    @Field(() => [SiteModuleEntity])
-    siteModules: SiteModuleEntity[];
-
+    @Field(() => AppointmentInfoEntity)
+    @OneToMany(() => AppointmentInfoEntity, info => info.packages)
+    bookingInfo: AppointmentInfoEntity;
 }
