@@ -8,7 +8,6 @@ import { EmailModule } from '../email/email.module';
 import { CompanyEntity } from 'src/entities/Company.entity';
 import { RedisCacheModule } from '../cache/redisCache.module';
 import { UserGateway } from './user.gateway';
-import { UserResolver } from './user.resolver';
 import { NotifyModule } from '../notify/notify.module';
 
 @Module({
@@ -18,7 +17,7 @@ import { NotifyModule } from '../notify/notify.module';
     RedisCacheModule,
     NotifyModule
   ],
-  providers: [UserService, UserGateway, UserResolver],
+  providers: [UserService, UserGateway, ],
   controllers: [UserController],
   exports: [UserService]
 })

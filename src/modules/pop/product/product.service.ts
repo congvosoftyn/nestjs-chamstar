@@ -43,7 +43,7 @@ export class ProductService {
     }
 
     async updateProduct(id: number, body: NewProductDto, storeId: number) {
-        await ProductEntity.createQueryBuilder().update(<ProductEntity>{ ...body, modifiers: undefined, productOptions: undefined }).where("id = :id and storeId = :storeId", { id, storeId }).execute()
+        await ProductEntity.createQueryBuilder().update(<ProductEntity>{ ...body}).where("id = :id and storeId = :storeId", { id, storeId }).execute()
         return ProductEntity.createQueryBuilder("product").leftJoinAndSelect('product.tax', 'tax').where("product.id = :id and product.storeId = :storeId", { id, storeId }).getOne()
     }
 

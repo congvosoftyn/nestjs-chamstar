@@ -2,12 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, Unique, 
 import { IsEmail } from "class-validator";
 import { CompanyCustomerEntity } from "./CompanyCustomer.entity";
 import { PictureEntity } from "./Picture.entity";
-import { PromotionEntity } from "./Promotion.entity";
-import { WaitListEntity } from "./WaitList.entity";
-import { AppointmentBookingEntity } from "./AppointmentBooking.entity";
 import { AddressEntity } from "./Address.entity";
 import { StoreEntity } from "./Store.entity";
-import { CustomerPostEntity } from "./CustomerPost.entity";
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 import GraphQLJSON from "graphql-type-json";
 import { BillingEntity } from "./Billing.entity";
@@ -68,10 +64,6 @@ export class CustomerEntity extends BaseEntity {
   @Field(() => [CompanyCustomerEntity])
   companyCustomer: CompanyCustomerEntity[];
 
-  @OneToMany(type => WaitListEntity, waitlist => waitlist.customer)
-  @Field(() => [WaitListEntity])
-  waitlists: WaitListEntity[];
-
   @CreateDateColumn({ precision: null, type: "timestamp" })
   @Field(() => Date)
   created: Date;
@@ -87,15 +79,6 @@ export class CustomerEntity extends BaseEntity {
   @OneToMany(type => PictureEntity, picture => picture.customer)
   @Field(() => [PictureEntity])
   pictures: PictureEntity[];
-
-  @ManyToMany(type => PromotionEntity)
-  @JoinTable()
-  @Field(() => [PromotionEntity])
-  promotions: PromotionEntity[];
-
-  // @OneToMany(type => AppointmentBookingEntity, appointment => appointment.customer)
-  // @Field(() => [AppointmentBookingEntity])
-  // appointments: AppointmentBookingEntity[];
 
   @Column({ nullable: true, select: false })
   @Field(() => Int, { nullable: true })
@@ -154,10 +137,6 @@ export class CustomerEntity extends BaseEntity {
   @JoinTable()
   @Field(() => [StoreEntity])
   favorStores: StoreEntity[];
-
-  @ManyToOne(type => CustomerPostEntity)
-  @Field(() => GraphQLJSON)
-  postTag: CustomerPostEntity;
 
   @ManyToOne(type => BillingEntity)
   @Field(() => GraphQLJSON)

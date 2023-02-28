@@ -1,10 +1,6 @@
-import { forwardRef, HttpException, HttpStatus, Inject, Injectable, NotFoundException, } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, } from '@nestjs/common';
 import { BillingEntity } from 'src/entities/Billing.entity';
-import { CompanyEntity } from 'src/entities/Company.entity';
 import { PaymentEntity } from 'src/entities/Payment.entity';
-import { SiteSettingEntity } from 'src/entities/SiteSetting.entity';
-import { AddNewCardDto } from './dto/AddNewCard.dto';
-import { ChargePaymentDto } from './dto/ChargePayment.dto';
 import { PaymentGateway } from './payment.gateway';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
@@ -46,18 +42,6 @@ export class PaymentService {
 
     const total = await rootQuery.getCount();
     return { items: payments, totalCount: total };
-  }
-
-
-  private async checkPaymentGateway() {
-    let paymentGateway = await SiteSettingEntity.findOne({ where: { key: 'paymentGateway' }, });
-    if (!paymentGateway) {
-      paymentGateway = new SiteSettingEntity();
-      paymentGateway.key = 'paymentGateway';
-      paymentGateway.value = 'stripe';
-      await paymentGateway.save();
-    }
-    return paymentGateway;
   }
 
   getPayments(skip: number = 0, take: number = 10, companyId: number) {

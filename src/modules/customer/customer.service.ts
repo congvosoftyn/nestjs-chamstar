@@ -5,11 +5,9 @@ import { CompanyCustomerEntity } from 'src/entities/CompanyCustomer.entity';
 import { FindCustomerDto } from './dto/FindCustomer.dto';
 import { GetCustomerDto } from './dto/GetCustomer.dto';
 import { StoreEntity } from 'src/entities/Store.entity';
-import { ReviewEntity } from 'src/entities/Review.entity';
 import { ConstactUsDto } from './dto/ContactUs.dto';
 import { EmailService } from '../email/email.service';
 import { AddressEntity } from 'src/entities/Address.entity';
-import { CustomerGroupEntity } from 'src/entities/CustomerGroup.entity';
 import { ImportCustomerDto } from './dto/ImportCustomer.dto';
 import { UpdateCompanyCustomerDto } from './dto/update-comapny-customer.dto';
 import { AddStoreDto } from './dto/AddStore.dto';
@@ -157,12 +155,6 @@ export class CustomerService {
     if (!customer) {
       throw new NotFoundException(`not found with id ${id}`)
     }
-    customer.customerGroups = await CustomerGroupEntity
-      .createQueryBuilder('g')
-      .leftJoin('g.companyCustomer', 'c')
-      .where('c.id = :id', { id: customer.id })
-      .getMany();
-
     return customer;
   }
 
@@ -255,23 +247,6 @@ export class CustomerService {
         `);
 
     return { succeed: true };
-  }
-
-  async getFavorStore(customerId: number) {
-    const favor = await CustomerEntity.createQueryBuilder('customer')
-      .leftJoinAndSelect('customer.favorStores', 'store')
-      .addSelect(s => s
-        .select('ROUND(AVG(review.rate),1)', 'store_rate')
-        .from(ReviewEntity, 'review').where('review.storeId=store.id'), 'store_rate')
-      .addSelect(s => s
-        .select('COUNT(review.id)', 'review_count')
-        .from(ReviewEntity, 'review').where('review.storeId=store.id'), 'store_reviewCount')
-      .where('customer.id = :customerId', { customerId })
-      .getOne();
-
-    if (!favor) throw new NotFoundException(`not found with id ${customerId}`);
-
-    return favor.favorStores;
   }
 
   async addFavorStore(body: AddStoreDto, customerId: number) {

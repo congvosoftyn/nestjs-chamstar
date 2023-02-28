@@ -1,10 +1,8 @@
-import { BaseEntity, Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, } from 'typeorm';
-import { ModifierEntity } from './Modifier.entity';
+import { BaseEntity, Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, } from 'typeorm';
 import { ProductCategoryEntity } from './ProductCategory.entity';
 import { ProductOptionEntity } from './ProductOption.entity';
 import { StaffEntity } from './Staff.entity';
 import { StoreEntity } from './Store.entity';
-import { SupplierEntity } from './Supplier.entity';
 import { TaxEntity } from './Tax.entity';
 import { ObjectType, Field, Int, InputType, Float } from '@nestjs/graphql';
 import { PackageCategoryEntity } from './package-category.entity';
@@ -124,11 +122,6 @@ export class ProductEntity extends BaseEntity {
   @OneToMany((type) => ProductOptionEntity, (m) => m.product, { cascade: ['insert', 'update'], })
   @Field(() => [ProductOptionEntity])
   productOptions: ProductOptionEntity[];
-
-  @ManyToMany((type) => ModifierEntity, (modifier) => modifier.products)
-  @JoinTable()
-  @Field(() => [ModifierEntity])
-  modifiers: ModifierEntity[];
 
   @ManyToOne((type) => ProductCategoryEntity, (category) => category.services)
   @Field(() => ProductCategoryEntity)

@@ -55,13 +55,6 @@ export class StoreController {
         return this.storeService.getStore(id, storeId);
     }
 
-    @Get('/module')
-    @ApiBearerAuth('access-token')
-    @UseGuards(JwtAuthenticationGuard)
-    async getModules(@User('companyId') companyId: number) {
-        return this.storeService.getModules(companyId);
-    }
-
     @Get('/subDomain')
     @ApiBearerAuth('access-token')
     @UseGuards(JwtAuthenticationGuard)
@@ -79,11 +72,6 @@ export class StoreController {
     @Get('/client')
     async getcustomerStores(@Query() _data: GetCustomerStoresDto) {
         return this.storeService.getcustomerStores(_data);
-    }
-
-    @Get('/client/:id')
-    async getCustomerStoreDetail(@Param('id') id: number) {
-        return this.storeService.getCustomerStoreDetail(id);
     }
 
     @Post('/client/:id')
@@ -113,20 +101,6 @@ export class StoreController {
     @UseGuards(JwtCustomerAuthGuard)
     async checkin(@User('customerId') customerId: number) {
         return this.storeService.getCheckin(customerId);
-    }
-
-    @Get('/review/:id')
-    @ApiBearerAuth('customer-token')
-    @UseGuards(JwtCustomerAuthGuard)
-    async getReview(@Param('id') id: number, @Query('skip') skip: number, @Query('take') take: number,) {
-        return this.storeService.getReview(skip, take, id);
-    }
-
-    @Get('/review-rating/:id')
-    @ApiBearerAuth('customer-token')
-    @UseGuards(JwtCustomerAuthGuard)
-    async getRating(@Param('id') id: number) {
-        return this.storeService.getRating(id);
     }
 
     @Get('/categories')

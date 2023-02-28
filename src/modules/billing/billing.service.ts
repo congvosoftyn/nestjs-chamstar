@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { BillingEntity } from 'src/entities/Billing.entity';
-import { MessageSentEntity } from 'src/entities/MessageSent.entity';
-import { Between } from 'typeorm';
 import { GetQueryDto } from './dto/GetQuery.dto';
 
 @Injectable()
@@ -21,13 +19,7 @@ export class BillingService {
     return { items: bills, totalCount: total };
   }
 
-  async getBills(query: GetQueryDto, companyId: number) {
-    // const bills = await Billing.find({
-    //     where : {companyId},
-    //     order: {created: 'DESC'},
-    //     skip: pageNumber,
-    //     take: pageSize
-    // });
+  getBills(query: GetQueryDto, companyId: number) {
     return BillingEntity.createQueryBuilder('billing')
       .leftJoinAndSelect('billing.subscription', 'subscription')
       .where('subscription.companyId = :companyId', { companyId })

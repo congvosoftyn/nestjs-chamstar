@@ -2,13 +2,9 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, ManyToMa
 import { CompanyEntity } from "./Company.entity";
 import { CheckInEntity } from "./CheckIn.entity";
 import { StoreSettingEntity } from "./StoreSetting.entity";
-import { ReviewEntity } from "./Review.entity";
 import { PictureEntity } from "./Picture.entity";
-import { RewardEntity } from "./Reward.entity";
-import { PromotionEntity } from "./Promotion.entity";
 import { OpenHourEntity } from "./OpenHour.entity";
 import { TagEntity } from "./Tag.entity";
-import { PosSettingEntity } from "./PosSetting.entity";
 import { StaffEntity } from "./Staff.entity";
 import { AppointmentSettingEntity } from "./AppointmentSetting.entity";
 import { Field, InputType, Int, ObjectType } from "@nestjs/graphql";
@@ -115,14 +111,6 @@ export class StoreEntity extends BaseEntity {
     @Field(() => Int)
     companyId: number;
 
-    @OneToMany(type => RewardEntity, reward => reward.store)
-    @Field(() => [RewardEntity])
-    rewards: RewardEntity[];
-
-    @OneToMany(type => PromotionEntity, promotion => promotion.store)
-    @Field(() => [PromotionEntity])
-    promotions: PromotionEntity[];
-
     @OneToMany(type => CheckInEntity, checkin => checkin.store)
     @Field(() => [CheckInEntity])
     checkIn: CheckInEntity[];
@@ -131,17 +119,11 @@ export class StoreEntity extends BaseEntity {
     @Field(() => StoreSettingEntity)
     storeSetting: StoreSettingEntity;
 
-    @OneToOne(type => PosSettingEntity, pos_setting => pos_setting.store)
-    @Field(() => PosSettingEntity)
-    posSetting: PosSettingEntity
-
     @OneToOne(type => AppointmentSettingEntity, appointmentSetting => appointmentSetting.store, { cascade: ["update", "insert", "remove"] })
     @Field(() => AppointmentSettingEntity)
     appointmentSetting: AppointmentSettingEntity;
 
-    @OneToMany(type => ReviewEntity, review => review.store)
-    @Field(() => [ReviewEntity])
-    reviews: ReviewEntity[];
+
 
     @ManyToMany(type => PictureEntity, { cascade: ["update", "insert", "remove"] })
     @JoinTable()

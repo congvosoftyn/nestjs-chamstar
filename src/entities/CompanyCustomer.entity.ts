@@ -1,9 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, JoinColumn, ManyToMany, ManyToOne, CreateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, JoinColumn, ManyToOne, CreateDateColumn } from "typeorm";
 import { CompanyEntity } from "./Company.entity";
 import { CustomerEntity } from "./Customer.entity";
 import { CheckInEntity } from "./CheckIn.entity";
-import { RewardClaimedEntity } from "./RewardClaimed.entity";
-import { CustomerGroupEntity } from "./CustomerGroup.entity";
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 
 @ObjectType('CompanyCustomer')
@@ -57,14 +55,6 @@ export class CompanyCustomerEntity extends BaseEntity {
     @Field(() => [CheckInEntity])
     checkIn: CheckInEntity[];
 
-    @OneToMany(type => RewardClaimedEntity, rewardClaimed => rewardClaimed.companyCustomer)
-    @Field(() => [RewardClaimedEntity])
-    rewardClaimeds: RewardClaimedEntity[];
-
-    @ManyToMany(type => CustomerGroupEntity, group => group.companyCustomer)
-    @Field(() => [CustomerGroupEntity])
-    customerGroups: CustomerGroupEntity[];
-
     @Column({ default: 0 })
     @Field(() => Int, { defaultValue: 0 })
     balance: number
@@ -76,11 +66,4 @@ export class CompanyCustomerEntity extends BaseEntity {
     @CreateDateColumn({ precision: null, type: "timestamp" })
     @Field(() => Date)
     created: Date;
-
-    // @JoinTable()
-    // @ManyToMany(type=> CustomerGroup)
-    // customerGroups: CustomerGroup[];
-
-    @Field(() => [CustomerGroupEntity])
-    groups: CustomerGroupEntity[]
 }

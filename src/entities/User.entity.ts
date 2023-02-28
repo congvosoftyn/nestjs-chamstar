@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, BaseEntity, Unique, ManyToOne, ManyToMany, JoinTable, RelationId } from 'typeorm';
 import { CompanyEntity } from './Company.entity';
 import crypto = require('crypto');
-import { PermissionEntity } from "./Permission.entity";
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 import { Length, IsEmail } from 'class-validator';
 
@@ -36,15 +35,6 @@ export class UserEntity extends BaseEntity {
   @Column({ default: true })
   @Field(() => Boolean, { defaultValue: true })
   isCreator: boolean;
-
-  @ManyToMany(type => PermissionEntity, { eager: true })
-  @JoinTable()
-  @Field(() => [PermissionEntity])
-  permissions: PermissionEntity[];
-
-  @RelationId((user: UserEntity) => user.permissions)
-  @Field(() => [Int])
-  permissionIds: number[];
 
   @Column({ nullable: true, select: false })
   @Field(() => String, { nullable: true })

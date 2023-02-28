@@ -3,14 +3,11 @@ import { LIFE_SECRET, REFRESH_TOKEN_LIFE_EXPIRES, REFRESH_TOKEN_SECRET, SECRET, 
 import { CompanyEntity } from 'src/entities/Company.entity';
 import { CompanySettingEntity } from 'src/entities/CompanySetting.entity';
 import { OpenHourEntity } from 'src/entities/OpenHour.entity';
-import { PackageEntity } from 'src/entities/Package.entity';
 import { StoreEntity } from 'src/entities/Store.entity';
 import { StoreSettingEntity } from 'src/entities/StoreSetting.entity';
-import { SubscriptionEntity } from 'src/entities/Subscription.entity';
 import { UserEntity } from 'src/entities/User.entity';
 import { DataStoredInToken } from 'src/shared/interfaces/DataStoreInToken.interface';
 import { TokenData } from 'src/shared/interfaces/TokenData.interface';
-import { Repository } from 'typeorm';
 import { EmailService } from '../email/email.service';
 import { CreateStoreDto, CreateUserDto } from './dto/createUser.dto';
 import * as jwt from 'jsonwebtoken';
@@ -20,11 +17,7 @@ import { PostDataDto } from './dto/PostData.dto';
 import { FindUsersDto } from './dto/FindUsers.dto';
 import { ChangePasswordDto } from './dto/ChangePassword.dto';
 import { UpdateMyUserDto } from './dto/UpdateMyUser.dto';
-import { BillingEntity } from 'src/entities/Billing.entity';
-import { RewardEntity } from 'src/entities/Reward.entity';
 import { UserGateway } from './user.gateway';
-import { PermissionEntity } from 'src/entities/Permission.entity';
-import { AddressEntity } from 'src/entities/Address.entity';
 import { validate } from 'class-validator';
 import { FirebaseAuthDto } from './dto/firebase-auth.dto';
 import { CreateUserDTO } from './dto/create-user.dto';
@@ -155,22 +148,6 @@ export class UserService {
     let company = new CompanyEntity();
     company.name = businessName;
     company = await CompanyEntity.save(company);
-    if (packageId) {
-      const subs = new SubscriptionEntity();
-      subs.companyId = company.id;
-      subs.packageId = packageId;
-      await subs.save();
-    } else {
-      const _package = await PackageEntity.findOne({
-        where: { isDefault: true },
-      });
-      if (_package) {
-        const subs = new SubscriptionEntity();
-        subs.companyId = company.id;
-        subs.packageId = _package.id;
-        await subs.save();
-      }
-    }
 
     companyStore.companyId = company.id;
     companyStore.secretKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -226,7 +203,6 @@ export class UserService {
       userId: user.id,
       companyId: user.company?.id ? user.company?.id : user.companyId,
       storeId: _storeId,
-      roleIds: user.permissionIds,
     };
 
     const response: TokenData = {
@@ -294,7 +270,7 @@ export class UserService {
     try {
       const decoded = jwt.verify(_postData.refreshToken, REFRESH_TOKEN_SECRET,) as DataStoredInToken;
 
-      const tokenData = { userId: decoded.userId, companyId: decoded.companyId, storeId: decoded.storeId, roleIds: decoded.roleIds, };
+      const tokenData = { userId: decoded.userId, companyId: decoded.companyId, storeId: decoded.storeId};
 
       const newToken = jwt.sign(tokenData, LIFE_SECRET, { expiresIn: TOKEN_LIFE_EXPIRES, });
       const newRefreshToken = jwt.sign(tokenData, REFRESH_TOKEN_SECRET, { expiresIn: REFRESH_TOKEN_LIFE_EXPIRES, });
@@ -436,12 +412,7 @@ export class UserService {
     await company.save();
     //new sample reward
     const store = await StoreEntity.findOne({ where: { companyId: user.companyId }, });
-
-    const reward = new RewardEntity();
-    reward.storeId = store.id;
-    reward.name = '10% off on next order';
-    reward.pointRequired = 10;
-    await reward.save();
+   
     user.company = company;
 
     // this.emailService.newAccount(user.email, company.name);
@@ -492,10 +463,6 @@ export class UserService {
       user.address = null;
       await UserEntity.save(user);
     } else {
-      if (user.permissionIds && user.permissionIds.length > 0) {
-        const roles = await PermissionEntity.createQueryBuilder('permission').where('permission.id IN (:...permissionIds)', { permissionIds: user.permissionIds, }).getMany();
-        user.permissions = roles;
-      }
 
       if (user.password.length < 128) {
         const newUser = new UserEntity();

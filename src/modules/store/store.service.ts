@@ -3,8 +3,6 @@ import { CheckInEntity } from 'src/entities/CheckIn.entity';
 import { OpenHourEntity } from 'src/entities/OpenHour.entity';
 import { PictureEntity } from 'src/entities/Picture.entity';
 import { ProductEntity } from 'src/entities/Product.entity';
-import { ReviewEntity } from 'src/entities/Review.entity';
-import { SiteModuleEntity } from 'src/entities/SiteModule.entity';
 import { StoreEntity } from 'src/entities/Store.entity';
 import { DataStoredInToken } from 'src/shared/interfaces/DataStoreInToken.interface';
 import { TokenData } from 'src/shared/interfaces/TokenData.interface';
@@ -79,15 +77,6 @@ export class StoreService {
         return store
     }
 
-    async getModules(companyId: number) {
-        return await SiteModuleEntity.createQueryBuilder('module')
-            .leftJoin('module.packages', 'package')
-            .leftJoin('package.subscription', 'subscription')
-            .where('subscription.companyId = :companyId', { companyId })
-            .getMany();
-    }
-
-
     async getcustomerStores(_data: GetCustomerStoresDto) {
         //   const customerId = res.locals.jwtPayload.customerId;
         const latitude = _data.latitude;
@@ -134,24 +123,7 @@ export class StoreService {
         return await builder.getMany();
     }
 
-    async getCustomerStoreDetail(storeId: number) {
-        return await StoreEntity.createQueryBuilder('store')
-            .addSelect(s => s
-                .select('ROUND(AVG(review.rate),1)', 'store_rate')
-                .from(ReviewEntity, 'review').where('review.storeId=store.id'), 'store_rate')
-            .addSelect(s => s
-                .select('COUNT(review.id)', 'review_count')
-                .from(ReviewEntity, 'review').where('review.storeId=store.id'), 'store_reviewCount')
-            .addSelect(`exists (${ProductEntity.createQueryBuilder('service').where('service.storeId = store.id').andWhere('service.isService=true').getQuery()})`, 'store_hasService')
-            .leftJoinAndSelect('store.tags', 'tags')
-            .leftJoinAndSelect('store.pictures', 'pictures')
-            .leftJoinAndSelect('pictures.customer', 'customer')
-            .leftJoinAndSelect('store.rewards', 'rewards', 'rewards.isActive=true')
-            .leftJoinAndSelect('store.promotions', 'promotions')
-            .leftJoinAndSelect('store.openHours', 'openHours')
-            .where({ isActive: true, id: storeId })
-            .getOne();
-    }
+
 
     async getWallet(customerId: number, skip: number, take: number) {
         return await StoreEntity.createQueryBuilder('store')
@@ -184,7 +156,7 @@ export class StoreService {
 
     async selectStore(storeId: number, refreshToken: string, companyId: number, roleIds: [number], userId: number) {
         this.cacheService.delete(refreshToken);
-        const tokenData = await this.createToken({ companyId, roleIds, storeId, userId });
+        const tokenData = await this.createToken({ companyId, storeId, userId });
         this.cacheService.set(tokenData.refreshToken, tokenData.token);
         const response = { accessToken: tokenData };
         return response;
@@ -233,7 +205,6 @@ export class StoreService {
             userId: payload.userId,
             companyId: payload.companyId,
             storeId: payload.storeId,
-            roleIds: payload.roleIds
         };
 
         return {
@@ -244,54 +215,17 @@ export class StoreService {
     }
 
     async getCheckin(customerId: number) {
-        return await CheckInEntity.createQueryBuilder('checkin')
+        return CheckInEntity.createQueryBuilder('checkin')
             .leftJoinAndSelect('checkin.store', 'store')
-            // .leftJoinAndSelect('store.pictures', 'pictures')
-            // .leftJoinAndSelect('store.tags', 'tags')
-            // .leftJoinAndSelect('store.rewards', 'rewards', 'rewards.isActive=true')
-            // .leftJoinAndSelect('store.promotions', 'promotions')
-            // .leftJoinAndSelect('store.openHours', 'openHours')
-            // .leftJoinAndSelect('store.reviews', 'reviews')
             .leftJoinAndSelect('checkin.companyCustomer', 'companyCustomer')
             .where('companyCustomer.customerId = :customerId', { customerId })
             .orderBy('checkin.checkInDate', 'DESC')
             .getMany();
     }
 
-    async getReview(skip: number, take: number, storeId: number) {
-        return await ReviewEntity.createQueryBuilder('review')
-            .leftJoinAndSelect('review.store', 'store')
-            .leftJoinAndSelect('review.customer', 'customer')
-            .where('review.storeId = :storeId', { storeId })
-            .orderBy('review.created', 'DESC')
-            .limit(take || 10)
-            .offset(skip || 0)
-            .getMany();
-    }
-
-    async getRating(storeId: number) {
-        const review_rate = await ReviewEntity.createQueryBuilder('review')
-            .select('ROUND(AVG(review.rate),1)', 'rating_avg')
-            .addSelect('COUNT(review.id)', 'rating_count')
-            .leftJoin('review.store', 'store')
-            .where('review.storeId = :storeId', { storeId })
-            .orderBy('review.created', 'DESC')
-            .getRawOne();
-        const review_meta = await ReviewEntity.createQueryBuilder('review')
-            .select('review.rate', 'rate')
-            .addSelect('COUNT(*)', 'count')
-            .groupBy('review.rate')
-            .leftJoin('review.store', 'store')
-            .orderBy('rate', 'ASC')
-            .where('review.storeId = :storeId', { storeId })
-            .getRawMany();
-
-        review_rate.review_meta = review_meta.reduce((acc, curr) => (acc[curr.rate] = curr.count, acc), {})
-        return review_rate;
-    }
 
     async getWalletDetail(id: number) {
-        return await StoreEntity.createQueryBuilder('store')
+        return StoreEntity.createQueryBuilder('store')
             .leftJoinAndSelect('store.rewards', 'rewards', 'rewards.isActive=true')
             .leftJoinAndSelect('store.promotions', 'promotions')
             .where('store.id = :id', { id })
