@@ -1,7 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, Unique, CreateDateColumn, ManyToMany, JoinTable, ManyToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, Unique, CreateDateColumn, ManyToMany, JoinTable, ManyToOne, JoinColumn } from "typeorm";
 import { IsEmail } from "class-validator";
-import { CompanyCustomerEntity } from "./CompanyCustomer.entity";
-import { PictureEntity } from "./Picture.entity";
 import { AddressEntity } from "./Address.entity";
 import { StoreEntity } from "./Store.entity";
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
@@ -13,8 +11,6 @@ import { BillingEntity } from "./Billing.entity";
 @Entity('customer')
 @Unique(["phoneNumber", "countryCode"])
 export class CustomerEntity extends BaseEntity {
-  // attached pushNotification as a service propertiy for customer entity 
-
   @PrimaryGeneratedColumn()
   @Field(() => Int)
   id: number;
@@ -60,9 +56,14 @@ export class CustomerEntity extends BaseEntity {
   @Field(() => Boolean, { defaultValue: false })
   verified: boolean
 
-  @OneToMany(type => CompanyCustomerEntity, companyCustomer => companyCustomer.customer, { cascade: true })
-  @Field(() => [CompanyCustomerEntity])
-  companyCustomer: CompanyCustomerEntity[];
+  @ManyToOne(type => StoreEntity, store => store.customers, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'storeId' })
+  @Field(() => StoreEntity)
+  store: StoreEntity;
+
+  @Column({ type: 'int' })
+  @Field(() => Int)
+  storeId: number;
 
   @CreateDateColumn({ precision: null, type: "timestamp" })
   @Field(() => Date)
@@ -73,52 +74,12 @@ export class CustomerEntity extends BaseEntity {
   fcmToken: string;
 
   @Column({ nullable: true })
-  @Field({ nullable: true })
-  socketId: string;
-
-  @OneToMany(type => PictureEntity, picture => picture.customer)
-  @Field(() => [PictureEntity])
-  pictures: PictureEntity[];
-
-  @Column({ nullable: true, select: false })
-  @Field(() => Int, { nullable: true })
-  following: number;
-
-  @Column({ nullable: true, select: false })
-  @Field(() => Int, { nullable: true })
-  follower: number;
-
-  @Column({ nullable: true })
-  @Field(() => Int, { nullable: true })
-  facebook: string;
-
-  @Column({ nullable: true })
-  @Field(() => String, { nullable: true })
-  instagram: string;
-
-  @Column({ nullable: true })
-  @Field(() => String, { nullable: true })
-  twitter: string;
-
-  @Column({ nullable: true })
-  @Field(() => String, { nullable: true })
-  pinterest: string;
-
-  @Column({ nullable: true })
   @Field(() => String, { nullable: true })
   website: string;
 
   @Column({ nullable: true })
   @Field(() => String, { nullable: true })
   description: string;
-
-  getFullName() {
-    return this.firstName + ' ' + this.lastName;
-  }
-
-  getPhoneNumber() {
-    return this.countryCode + this.phoneNumber;
-  }
 
   @OneToMany(() => AddressEntity, address => address.customer, { cascade: ["insert", "update"] })
   @Field(() => [AddressEntity])
@@ -132,4 +93,12 @@ export class CustomerEntity extends BaseEntity {
   @ManyToOne(type => BillingEntity)
   @Field(() => GraphQLJSON)
   billing: BillingEntity;
+
+  getFullName() {
+    return this.firstName + ' ' + this.lastName;
+  }
+
+  getPhoneNumber() {
+    return this.countryCode + this.phoneNumber;
+  }
 }

@@ -12,12 +12,12 @@ import { CheckOutDto } from './dto/CheckOut.dto';
 export class CheckinController {
   constructor(private checkinService: CheckinService) { }
 
-  @Post()
-  @ApiBearerAuth('access-token')
-  @UseGuards(JwtAuthenticationGuard)
-  async checkIn(@Body() _checkIn: CheckInDto, @User('companyId') companyId: number, @User('storeId') storeId: number) {
-    return this.checkinService.checkIn(_checkIn, companyId, storeId);
-  }
+  // @Post()
+  // @ApiBearerAuth('access-token')
+  // @UseGuards(JwtAuthenticationGuard)
+  // async checkIn(@Body() _checkIn: CheckInDto, @User('companyId') companyId: number, @User('storeId') storeId: number) {
+  //   return this.checkinService.checkIn(_checkIn, companyId, storeId);
+  // }
 
   @Post('/checkout')
   @ApiBearerAuth('access-token')
@@ -26,12 +26,12 @@ export class CheckinController {
     return this.checkinService.checkOut(body)
   }
 
-  @Get('/customers')
-  @ApiBearerAuth('access-token')
-  @UseGuards(JwtAuthenticationGuard)
-  async checkInCustomers(@User('companyId') companyId: number) {
-    return this.checkinService.checkInCustomers(companyId);
-  }
+  // @Get('/customers')
+  // @ApiBearerAuth('access-token')
+  // @UseGuards(JwtAuthenticationGuard)
+  // async checkInCustomers(@User('companyId') companyId: number) {
+  //   return this.checkinService.checkInCustomers(companyId);
+  // }
 
   // @Post('/client')
   // @ApiBearerAuth('customer-token')

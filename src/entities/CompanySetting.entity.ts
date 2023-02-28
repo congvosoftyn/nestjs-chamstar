@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToOne, JoinColumn } from "typeorm";
-import { CompanyEntity } from "./Company.entity";
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 import GraphQLJSON from "graphql-type-json";
+import { StoreEntity } from "./Store.entity";
 
 @ObjectType('CompanySetting')
 @InputType('CompanySettingInput')
@@ -104,14 +104,14 @@ export class CompanySettingEntity extends BaseEntity {
     @Field({ defaultValue: 'Happy birthday, {{customer}}! We would like you have 10% off on your order. Enjoy your day.' })
     customBirthdayMessage: string;
 
-    @OneToOne(type => CompanyEntity, company => company.companyCustomer, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'companyId' })
+    @OneToOne(type => StoreEntity, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'storeId' })
     @Field(() => GraphQLJSON)
-    company: CompanyEntity;
+    store: StoreEntity;
 
     @Column({ type: 'int' })
     @Field(() => Int)
-    companyId: number;
+    storeId: number;
 
     //waitlist settings
     @Column({ default: true })

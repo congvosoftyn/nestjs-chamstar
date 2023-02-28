@@ -24,8 +24,8 @@ export class StoreService {
         return { available: count == 0 };
     }
 
-    async getStores(companyId: number) {
-        return await StoreEntity.find({ where: { companyId }, relations: ['openHours', 'pictures'] });
+    getStores(storeId: number) {
+        return StoreEntity.find({ where: { id: storeId }, relations: ['openHours', 'pictures'] });
     }
 
     async updateStore(id: number, store: UpdateStoreDto) {
@@ -52,17 +52,7 @@ export class StoreService {
     async getStore(id: number, _storeId?: number) {
         const storeId = id || _storeId;
         const store = await StoreEntity.findOne({ where: { id: storeId }, relations: ['openHours', 'appointmentSetting'] });
-        // if (!store.subDomain) {
-        //     let storeDomainName = store.name.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "");
-        //     const similarStoreNames = await StoreEntity.createQueryBuilder("store")
-        //         .where("store.subDomain LIKE :storeDomainName", { storeDomainName: `${storeDomainName}%` })
-        //         .getCount();
-
-        //     if (similarStoreNames > 0) storeDomainName = storeDomainName + similarStoreNames;
-
-        //     store.subDomain = storeDomainName;
-        //     await StoreEntity.save(store);
-        // }
+      
         if (store && store.openHours.length == 0) {
             for (let i = 0; i < 7; i++) {
                 const openHour = <OpenHourEntity>{
@@ -143,7 +133,7 @@ export class StoreService {
         for (const element of pictures) {
             let picture = new PictureEntity();
             picture.picture = element.image;
-            picture.customerId = customerId;
+            // picture.customerId = customerId;
             picture.thumbnail = element.thumb;
             await picture.save();
             store.pictures.push(picture);
@@ -156,7 +146,7 @@ export class StoreService {
 
     async selectStore(storeId: number, refreshToken: string, companyId: number, roleIds: [number], userId: number) {
         this.cacheService.delete(refreshToken);
-        const tokenData = await this.createToken({ companyId, storeId, userId });
+        const tokenData = await this.createToken({ storeId, userId });
         this.cacheService.set(tokenData.refreshToken, tokenData.token);
         const response = { accessToken: tokenData };
         return response;
@@ -164,8 +154,6 @@ export class StoreService {
 
     async editStore(body: EditStoreDto, companyId: number) {
         const store = body as StoreEntity;
-        store.companyId = companyId;
-
 
         if (store.pictures && store.pictures.some(p => (!p.id))) {
             for (let element of store.pictures.filter(p => (!p.id))) {
@@ -203,7 +191,6 @@ export class StoreService {
     async createToken(payload: DataStoredInToken): Promise<TokenData> {
         const dataStoredInToken: DataStoredInToken = {
             userId: payload.userId,
-            companyId: payload.companyId,
             storeId: payload.storeId,
         };
 

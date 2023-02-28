@@ -1,12 +1,11 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards, UsePipes } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CustomerService } from './customer.service';
-import { CompanyCustomerDto, CustomerDto } from './dto/CompanyCustomer.dto';
+import { CustomerDto } from './dto/Customer.dto';
 import { User } from 'src/modules/user/decorators/user.decorator';
 import { ImportCustomerDto } from './dto/ImportCustomer.dto';
 import { GetCustomerDto } from './dto/GetCustomer.dto';
 import { FindCustomerDto } from './dto/FindCustomer.dto';
-import { UpdateCompanyCustomerDto } from './dto/update-comapny-customer.dto';
 import { UserCustomer } from '../user/decorators/user-customer.decorator';
 import { ConstactUsDto } from './dto/ContactUs.dto';
 import { AddStoreDto } from './dto/AddStore.dto';
@@ -24,24 +23,24 @@ export class CustomerController {
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthenticationGuard)
   @UsePipes(new ValidationPipe())
-  async newCustomer(@Body() body: CompanyCustomerDto, @User('companyId') companyId: number) {
-    return this.customerService.newCustomer(body, companyId);
+  async newCustomer(@Body() body: CustomerDto, @User('storeId') storeId: number) {
+    return this.customerService.newCustomer(body, storeId);
   }
 
   @Post('/import')
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthenticationGuard)
   @UsePipes(new ValidationPipe())
-  async importCustomer(@Body() body: ImportCustomerDto, @User('companyId') companyId: number): Promise<{ status: string }> {
-    return this.customerService.importCustomer(body, companyId)
+  async importCustomer(@Body() body: ImportCustomerDto, @User('storeId') storeId: number): Promise<{ status: string }> {
+    return this.customerService.importCustomer(body, storeId)
   }
 
   @Get()
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthenticationGuard)
   @UsePipes(new ValidationPipe())
-  async getCustomers(@Query() _getCustomer: GetCustomerDto, @User('companyId') companyId: number) {
-    return this.customerService.getCustomers(_getCustomer, companyId)
+  async getCustomers(@Query() _getCustomer: GetCustomerDto, @User('storeId') storeId: number) {
+    return this.customerService.getCustomers(_getCustomer, storeId)
   }
 
   @Delete(':id')
@@ -64,15 +63,15 @@ export class CustomerController {
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthenticationGuard)
   @UsePipes(new ValidationPipe())
-  async updateCompanyCustomer(@Body() companyCustomer: UpdateCompanyCustomerDto) {
-    return this.customerService.updateCompanyCustomer(companyCustomer);
+  async updateCompanyCustomer(@Body() companyCustomer: UpdateCustomerDto, @User('storeId') storeId: number) {
+    return this.customerService.updateCustomer(companyCustomer,storeId);
   }
 
   @Put('/update')
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthenticationGuard)
-  async updateCustomer(@Body() body: UpdateCustomerDto) {
-    return this.customerService.updateCustomer(body);
+  async updateCustomer(@Body() body: UpdateCustomerDto, @User('storeId') storeId: number) {
+    return this.customerService.updateCustomer(body,storeId);
   }
 
   @Get('/customer/:id')
@@ -82,20 +81,12 @@ export class CustomerController {
     return this.customerService.getCustomerById(id);
   }
 
-  @Get('/companycustomer/:id')
-  @ApiBearerAuth('access-token')
-  @UseGuards(JwtAuthenticationGuard)
-  async getCompanyCustomerById(@Param('id') id: number) {
-    return this.customerService.getCompanyCustomerById(id)
-  }
-
-
-  @Get('/companycustomer/customer/:id')
-  @ApiBearerAuth('access-token')
-  @UseGuards(JwtAuthenticationGuard)
-  async getCompanyCustomerByCustomerId(@Param('id') id: number, @User('companyId') companyId: number) {
-    return this.customerService.getCompanyCustomerByCustomerId(id, companyId)
-  }
+  // @Get('/companycustomer/customer/:id')
+  // @ApiBearerAuth('access-token')
+  // @UseGuards(JwtAuthenticationGuard)
+  // async getCompanyCustomerByCustomerId(@Param('id') id: number, @User('companyId') companyId: number) {
+  //   return this.customerService.getCompanyCustomerByCustomerId(id, companyId)
+  // }
 
   @Post('/client')
   @ApiBearerAuth('customer-token')
@@ -123,19 +114,5 @@ export class CustomerController {
   @UseGuards(JwtCustomerAuthGuard)
   contactUs(@Body() body: ConstactUsDto, @UserCustomer('customerId') customerId: number) {
     return this.customerService.contactUs(body, customerId);
-  }
-
-  @Post('/favor-store')
-  @ApiBearerAuth('customer-token')
-  @UseGuards(JwtCustomerAuthGuard)
-  async addFavorStore(@Body() body: AddStoreDto, @UserCustomer('customerId') customerId: number) {
-    return this.customerService.addFavorStore(body, customerId)
-  }
-
-  @Delete('/favor-store/:storeId')
-  @ApiBearerAuth('customer-token')
-  @UseGuards(JwtCustomerAuthGuard)
-  async removeFavorStore(@Param('storeId') storeId: number, @UserCustomer('customerId') customerId: number) {
-    return this.customerService.removeFavorStore(storeId, customerId);
   }
 }

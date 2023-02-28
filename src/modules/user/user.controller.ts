@@ -88,11 +88,6 @@ export class UserController {
     return this.userService.checkUsername(email);
   }
 
-  @Get('code-again')
-  async sendVerifyEmailAgain(@Param('email') email: string) {
-    return this.userService.sendVerifyEmailAgain(email);
-  }
-
   @Post('register')
   @UsePipes(new ValidationPipe())
   async createUser(@Body() _user: CreateUserDto) {
@@ -121,8 +116,8 @@ export class UserController {
   @Put('update')
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthenticationGuard)
-  async updateUser(@Body() user: UserEntity, @User('companyId') companyId: number,) {
-    return this.userService.updateUser(user, companyId);
+  async updateUser(@Body() user: UserEntity) {
+    return this.userService.updateUser(user);
   }
 
   @Delete(':userId')

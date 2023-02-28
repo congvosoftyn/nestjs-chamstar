@@ -5,19 +5,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from 'src/entities/User.entity';
 import { StoreEntity } from 'src/entities/Store.entity';
 import { EmailModule } from '../email/email.module';
-import { CompanyEntity } from 'src/entities/Company.entity';
 import { RedisCacheModule } from '../cache/redisCache.module';
-import { UserGateway } from './user.gateway';
 import { NotifyModule } from '../notify/notify.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, StoreEntity, CompanyEntity]),
+    TypeOrmModule.forFeature([UserEntity, StoreEntity]),
     EmailModule,
     RedisCacheModule,
     NotifyModule
   ],
-  providers: [UserService, UserGateway, ],
+  providers: [UserService],
   controllers: [UserController],
   exports: [UserService]
 })

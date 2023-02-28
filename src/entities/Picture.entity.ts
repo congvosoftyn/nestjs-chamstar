@@ -18,14 +18,14 @@ export class PictureEntity extends BaseEntity {
   @Field({ nullable: true })
   thumbnail: string;
 
-  @ManyToOne(type => CustomerEntity, customer => customer.pictures, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'customerId' })
-  @Field(() => CustomerEntity)
-  customer: CustomerEntity;
+  // @ManyToOne(type => CustomerEntity, customer => customer.pictures, { onDelete: 'CASCADE' })
+  // @JoinColumn({ name: 'customerId' })
+  // @Field(() => CustomerEntity)
+  // customer: CustomerEntity;
 
-  @Column({ type: 'int', nullable: true })
-  @Field(() => Int, { nullable: true })
-  customerId: number;
+  // @Column({ type: 'int', nullable: true })
+  // @Field(() => Int, { nullable: true })
+  // customerId: number;
 
   @CreateDateColumn({ precision: null, type: "timestamp" })
   @Field(() => Date)

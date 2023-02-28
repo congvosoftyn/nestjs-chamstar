@@ -1,6 +1,5 @@
 import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, UnauthorizedException, } from '@nestjs/common';
 import { LIFE_SECRET, REFRESH_TOKEN_LIFE_EXPIRES, REFRESH_TOKEN_SECRET, SECRET, TOKEN_LIFE_EXPIRES, } from 'src/config';
-import { CompanyEntity } from 'src/entities/Company.entity';
 import { CompanySettingEntity } from 'src/entities/CompanySetting.entity';
 import { OpenHourEntity } from 'src/entities/OpenHour.entity';
 import { StoreEntity } from 'src/entities/Store.entity';
@@ -17,7 +16,6 @@ import { PostDataDto } from './dto/PostData.dto';
 import { FindUsersDto } from './dto/FindUsers.dto';
 import { ChangePasswordDto } from './dto/ChangePassword.dto';
 import { UpdateMyUserDto } from './dto/UpdateMyUser.dto';
-import { UserGateway } from './user.gateway';
 import { validate } from 'class-validator';
 import { FirebaseAuthDto } from './dto/firebase-auth.dto';
 import { CreateUserDTO } from './dto/create-user.dto';
@@ -35,8 +33,6 @@ export class UserService {
   constructor(
     private emailService: EmailService,
     private cache: RedisCacheService,
-    @Inject(forwardRef(() => UserGateway))
-    private userGateway: UserGateway,
     private readonly notifyService: NotifyService
   ) { }
 
@@ -50,69 +46,43 @@ export class UserService {
     }
 
     let user = new UserEntity();
-    let companyStore = store as StoreEntity;
-    companyStore.email = email;
+    let _store = store as StoreEntity;
+    _store.email = email;
     user.fullName = fullName ? fullName : null;
     user.email = email;
     user.password = password;
     user.hashPassword();
 
-    let company = new CompanyEntity();
-    company.name = companyStore.name;
-    company.address = companyStore.address;
-    company.city = companyStore.city;
-    company.state = companyStore.state;
-    company.zipcode = companyStore.zipcode;
-    company.categories = companyStore.categories;
-    company.phoneNumber = companyStore.phoneNumber;
-    company.isActive = false;
-    company = await CompanyEntity.save(company);
 
-    companyStore.companyId = company.id;
-    companyStore.secretKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-    let storeDomainName = companyStore.name.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "");
-    const similarStoreNames = await StoreEntity.createQueryBuilder("store")
-      .where("store.subDomain LIKE :storeDomainName", { storeDomainName: `${storeDomainName}%` })
-      .getCount();
-
-    if (similarStoreNames > 0) storeDomainName = storeDomainName + similarStoreNames;
-
-    companyStore.subDomain = storeDomainName;
-    companyStore = await StoreEntity.save(companyStore);
+    _store = await StoreEntity.save(_store);
 
     let openHours = [];
     for (let i = 0; i < 7; i++) {
       openHours.push(<OpenHourEntity>{
         day: i,
         open: true,
-        storeId: companyStore.id,
+        storeId: _store.id,
       })
     }
     OpenHourEntity.save(openHours);
 
     const companySetting = new CompanySettingEntity();
-    companySetting.companyId = company.id;
+    companySetting.storeId = _store.id;
 
     CompanySettingEntity.save(companySetting);
 
     // create AppointmentSetting
     const appSetting = new AppointmentSettingEntity();
-    appSetting.storeId = companyStore.id;
+    appSetting.storeId = _store.id;
     appSetting.save();
 
     const storeSetting = new StoreSettingEntity();
-    storeSetting.storeId = companyStore.id;
+    storeSetting.storeId = _store.id;
     storeSetting.save();
-
-    user.company = company;
     await user.save();
-    // Send verify email
-    // this.sendVerificationEmail(user.email, company.name);
+
     user.password = undefined;
-    user.tempPassword = undefined;
-    user.tempPasswordExpire = undefined;
-    const token = await this.createToken(user, companyStore.id);
+    const token = await this.createToken(user, _store.id);
     const resonpose = { userInfo: user, accessToken: token };
     return resonpose;
   }
@@ -121,7 +91,6 @@ export class UserService {
     try {
       const code = Math.floor(100000 + Math.random() * 900000);
       const user = await UserEntity.findOneBy({ email: email });
-      user.emailVerifyCode = code.toString();
       await user.save();
       this.emailService.sendVerifyEmail(email, name, code.toString());
     } catch (err) {
@@ -139,69 +108,51 @@ export class UserService {
     const businessName: string = fullName || 'New Business';
 
     const user = new UserEntity();
-    let companyStore = new StoreEntity();
-    companyStore.email = email;
-    companyStore.name = businessName;
+    let store = new StoreEntity();
+    store.email = email;
+    store.name = businessName;
     user.email = email;
     user.password = password;
     user.hashPassword();
-    let company = new CompanyEntity();
-    company.name = businessName;
-    company = await CompanyEntity.save(company);
+  
+    store = await StoreEntity.save(store);
+    store.openHours = [];
 
-    companyStore.companyId = company.id;
-    companyStore.secretKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    let storeDomainName = companyStore.name.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '');
-    const similarStoreNames = await StoreEntity.createQueryBuilder('store').where('store.subDomain LIKE :storeDomainName', { storeDomainName: `${storeDomainName}%`, }).getCount();
-
-    if (similarStoreNames > 0)
-      storeDomainName = storeDomainName + similarStoreNames;
-
-    companyStore.subDomain = storeDomainName;
-    companyStore = await StoreEntity.save(companyStore);
-    companyStore.openHours = [];
     for (let i = 0; i < 7; i++) {
       const openHour = <OpenHourEntity>{
         day: i,
         open: true,
-        storeId: companyStore.id,
+        storeId: store.id,
       };
       await OpenHourEntity.save(openHour);
-      companyStore.openHours.push(openHour);
+      store.openHours.push(openHour);
     }
 
     const companySetting = new CompanySettingEntity();
-    companySetting.companyId = company.id;
+    companySetting.storeId = store.id;
 
     // create AppointmentSetting
     const appSetting = new AppointmentSettingEntity();
-    appSetting.storeId = companyStore.id;
+    appSetting.storeId = store.id;
     appSetting.save();
-
-    //TODO add google place API to get review link
-    //google review link  =https://search.google.com/local/writereview?placeid=
 
     await CompanySettingEntity.save(companySetting);
 
     const storeSetting = new StoreSettingEntity();
-    storeSetting.storeId = companyStore.id;
+    storeSetting.storeId = store.id;
     storeSetting.save();
 
-    user.company = company;
     user.save();
-    // Send verify email
-    this.sendVerificationEmail(user.email, company.name);
-    // delete user.password
-    return companyStore;
+ 
+    return store;
   }
 
   async createToken(user: UserEntity, storeId?: number) {
-    let store = await StoreEntity.createQueryBuilder('store').where("store.companyId = :id", { id: user.companyId }).getOne();
+    let store = await StoreEntity.createQueryBuilder('store').where("store.userId = :id", { id: user.id }).getOne();
     let _storeId = storeId ? storeId : store.id;
 
     const dataStoredInToken: DataStoredInToken = {
       userId: user.id,
-      companyId: user.company?.id ? user.company?.id : user.companyId,
       storeId: _storeId,
     };
 
@@ -228,28 +179,10 @@ export class UserService {
 
     if (!user) throw new HttpException('Account suppended', HttpStatus.SERVICE_UNAVAILABLE,);
 
-    if (user.checkIfUnencryptedPasswordIsValid(password) || (password === user.tempPassword && new Date(user.tempPasswordExpire) > new Date())) {
-      const tokenData = await this.createToken(user);
-      this.cache.set(tokenData.refreshToken, tokenData.token);
-      const response = { id: user.id, accessToken: tokenData };
-      if (user.tempPassword && password !== user.tempPassword) {
-        user.tempPassword = null;
-        user.tempPasswordExpire = null;
-        await user.save();
-      }
-
-      if (body?.deviceToken) {
-        let topic = body.email.replace(/[^\w\s]/gi, '')
-        let result = await this.notifyService.subscribeNotiTopic(topic, body.deviceToken)
-        if (result.successCount == 1) {
-          UserEntity.createQueryBuilder().update({ topicNoti: topic }).where("email = :email", { email }).execute()
-        }
-      }
-
-      return response;
-    } else {
-      throw new HttpException('Wrong credentials provided', HttpStatus.FORBIDDEN,);
-    }
+    const tokenData = await this.createToken(user);
+    this.cache.set(tokenData.refreshToken, tokenData.token);
+    const response = { id: user.id, accessToken: tokenData };
+    return response;
   }
 
   async logout(refreshToken: string, userId: number, deviceToken?: string) {
@@ -270,7 +203,7 @@ export class UserService {
     try {
       const decoded = jwt.verify(_postData.refreshToken, REFRESH_TOKEN_SECRET,) as DataStoredInToken;
 
-      const tokenData = { userId: decoded.userId, companyId: decoded.companyId, storeId: decoded.storeId};
+      const tokenData = { userId: decoded.userId, storeId: decoded.storeId };
 
       const newToken = jwt.sign(tokenData, LIFE_SECRET, { expiresIn: TOKEN_LIFE_EXPIRES, });
       const newRefreshToken = jwt.sign(tokenData, REFRESH_TOKEN_SECRET, { expiresIn: REFRESH_TOKEN_LIFE_EXPIRES, });
@@ -333,12 +266,6 @@ export class UserService {
       randomstring += chars.substring(rnum, rnum + 1);
     }
 
-    user.tempPassword = randomstring;
-    const nextDate = new Date();
-    //Send email with password
-    this.emailService.sendForgotEmail(user.email, user.fullName, user.tempPassword,);
-    nextDate.setTime(new Date().getTime() + 1000 * 24 * 3600);
-    user.tempPasswordExpire = nextDate;
     UserEntity.save(user);
 
     return { status: true };
@@ -399,24 +326,7 @@ export class UserService {
   }
 
   async verifyEmail(code: string, email: string) {
-    const user = await UserEntity.findOneBy({ email: email });
-    if (user.emailVerified) return user;
-
-    if (user.emailVerifyCode !== code) throw new HttpException('wrong code', HttpStatus.NOT_FOUND);
-
-    user.emailVerified = true;
-    await user.save();
-
-    const company = await CompanyEntity.findOne({ where: { id: user.companyId }, });
-    company.isActive = true;
-    await company.save();
-    //new sample reward
-    const store = await StoreEntity.findOne({ where: { companyId: user.companyId }, });
-   
-    user.company = company;
-
-    // this.emailService.newAccount(user.email, company.name);
-    return user;
+    return UserEntity.findOneBy({ email: email });
   }
 
   deleteUser(userId: number) {
@@ -425,21 +335,12 @@ export class UserService {
     return { message: 'delete' };
   }
 
-  async sendVerifyEmailAgain(email: string) {
-    const user = await UserEntity.findOne({ where: { email: email }, relations: ['company'] });
-
-    if (user) this.sendVerificationEmail(email, user.company.name);
-    return { message: 'sent' };
-  }
-
-  async updateUser(user: UserEntity, companyId: number) {
+  async updateUser(user: UserEntity) {
     //new user
     if (!user.id) {
       const result = await UserEntity.findOne({ where: { email: user.email }, });
-      if (result)
-        throw new HttpException('User already existed', HttpStatus.CONFLICT);
+      if (result) throw new HttpException('User already existed', HttpStatus.CONFLICT);
 
-      user.companyId = companyId;
       if (user.password) {
         user.hashPassword();
       } else {
@@ -450,20 +351,12 @@ export class UserService {
           const rnum = Math.floor(Math.random() * chars.length);
           randomstring += chars.substring(rnum, rnum + 1);
         }
-        user.tempPassword = randomstring;
         user.password = randomstring;
-        const nextDate = new Date();
-        //Send email with password
-        this.emailService.sendNewUserPassword(user.email, user.fullName ? user.fullName : '', randomstring,);
-        nextDate.setTime(new Date().getTime() + 1000 * 24 * 3600);
-        user.tempPasswordExpire = nextDate;
       }
-      // user.roleIds = null;
       user.isCreator = false;
       user.address = null;
       await UserEntity.save(user);
     } else {
-
       if (user.password.length < 128) {
         const newUser = new UserEntity();
         newUser.password = user.password;
@@ -510,16 +403,7 @@ export class UserService {
 
       if (body.uid === decodedToken.uid) {
         if (!_user.isActive) UserEntity.update(_user.id, { isActive: true });
-
-        // if (body?.deviceToken) {
-        //   // let topic = body.email.replace(/[^\w\s]/gi, '')
-        //   // let result = await this.notifyService.subscribeNotiTopic(topic, body.deviceToken)
-        //   // if (result.successCount == 1) {
-        //   //   UserEntity.createQueryBuilder().update({ topicNoti: topic }).where("email = :email", { email: _user.email }).execute()
-        //   // }
-        // }
-
-        const store = await StoreEntity.createQueryBuilder('store').where("store.companyId = :companyId", { companyId: _user.company.id }).getOne();
+        const store = await StoreEntity.createQueryBuilder('store').where("store.id = :id", { id: _user.id }).getOne();
         return this.buildUserRO(_user.email, store.id);
       }
     }
@@ -563,23 +447,18 @@ export class UserService {
       throw new HttpException({ message: 'Input data validation failed', errors }, HttpStatus.BAD_REQUEST,);
     }
 
-    const companyId = await this.newCompany({ name: 'softyn72' })
-
     // create new user
     const newUser = new UserEntity();
     newUser.fullName = dto.name ?? 'User';
     newUser.email = email;
     newUser.password = this.hashPassword(dto.password);
-    newUser.companyId = companyId;
 
-    // const store = await this.createStore(companyId, dto.store)
-    const store = await this.createStore(companyId, dto.store)
+    const store = await this.createStore(dto.store)
 
     if (socialSignup) {
       newUser.facebookId = socialSignup.isFacebook ? socialSignup.decodedToken : undefined;
       newUser.googleId = socialSignup.isGoogle ? socialSignup.decodedToken : undefined;
       newUser.appleId = socialSignup.isApple ? socialSignup.decodedToken : undefined;
-      newUser.emailVerified = socialSignup.isEmailVerify;
       newUser.image = socialSignup.image;
     }
     const errors = await validate(newUser);
@@ -601,18 +480,12 @@ export class UserService {
     }
   }
 
-  async createStore(companyId: number, body: CreateStoreDto) {
-    const secretKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
+  async createStore(body: CreateStoreDto) {
     const store = await StoreEntity.save(<StoreEntity>{
       name: body ? body.name ? body.name : 'string' : 'string',
-      companyId: companyId,
-      secretKey: secretKey,
-      // subDomain: storeDomainName,
     });
 
-
-    CompanySettingEntity.save(<CompanySettingEntity>{ companyId: companyId })
+    CompanySettingEntity.save(<CompanySettingEntity>{ storeId: store.id })
 
     AppointmentSettingEntity.save(<AppointmentSettingEntity>{ storeId: store.id })
 
@@ -664,44 +537,16 @@ export class UserService {
     return hash === password_hash;
   }
 
-  async newCompany(company: CreateCompanyDto) {
-    let _company = new CompanyEntity();
-    _company.name = company.name;
-    _company.address = company.address;
-    _company.city = company.city;
-    _company.state = company.state;
-    _company.zipcode = company.zipcode;
-    _company.categories = company.categories;
-    _company.phoneNumber = company.phoneNumber;
-    _company.isActive = false;
-    _company = await CompanyEntity.save(_company);
-    return _company.id
+  async newStore(store: CreateCompanyDto) {
+    let _store = store as StoreEntity;
+    _store.isActive = false;
+    return StoreEntity.save(_store);
   }
 
-  async updateCompany(id: number, updatecompany: CreateStoreDto) {
-    let company = await CompanyEntity.findOneBy({ id });
-    company.name = updatecompany.name;
-    company.address = updatecompany.address;
-    company.city = updatecompany.city;
-    company.state = updatecompany.state;
-    company.zipcode = updatecompany.zipcode;
-    company.categories = updatecompany.categories;
-    company.phoneNumber = updatecompany.phoneNumber;
-    company.isActive = false;
-
-    let store = await StoreEntity.findOne({ where: { companyId: id } });
-    store.name = updatecompany.name;
-    store.address = updatecompany.address;
-    store.city = updatecompany.city;
-    store.state = updatecompany.state;
-    store.zipcode = updatecompany.zipcode;
-    store.categories = updatecompany.categories;
-    store.phoneNumber = updatecompany.phoneNumber;
-    store.secretKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-    store.save();
-
-    return CompanyEntity.save(company);
+  async updateCompany(storeId: number, updatecompany: CreateStoreDto) {
+    let store = updatecompany as StoreEntity;
+    store.id = storeId;
+    return StoreEntity.save(store);
   }
 
   getConfirmationCode() {

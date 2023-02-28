@@ -1,6 +1,5 @@
-import { forwardRef, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CheckInEntity } from 'src/entities/CheckIn.entity';
-import { CompanyCustomerEntity } from 'src/entities/CompanyCustomer.entity';
 import { CustomerEntity } from 'src/entities/Customer.entity';
 import { StoreEntity } from 'src/entities/Store.entity';
 import { StoreSettingEntity } from 'src/entities/StoreSetting.entity';
@@ -18,106 +17,94 @@ import { CreateAppointmentDto } from '../appointment/booking/dto/create-booking.
 export class CheckinService {
   constructor(private bookingService: BookingService) { }
 
-  async checkIn(_checkIn: CheckInDto, companyId: number, storeId?: number, customerId?: number) {
-    let phoneNumber = _checkIn.phoneNumber;
+  // async checkIn(_checkIn: CheckInDto, companyId: number, storeId?: number, customerId?: number) {
+  //   let phoneNumber = _checkIn.phoneNumber;
 
-    let customer: CustomerEntity;
-    if (phoneNumber) {
-      phoneNumber = phoneNumber.match(/\d+/g).join("");
-      customer = await CustomerEntity.findOneBy({ phoneNumber });
-      if (!customer) {
-        customer = new CustomerEntity();
-        customer.phoneNumber = phoneNumber;
-        customer = await CustomerEntity.save(customer);
-      }
-    } else {
-      const store = await StoreEntity.findOne({ where: { secretKey: _checkIn.secretKey }, relations: ["company", "storeSetting"] });
+  //   let customer: CustomerEntity;
+  //   if (phoneNumber) {
+  //     phoneNumber = phoneNumber.match(/\d+/g).join("");
+  //     customer = await CustomerEntity.findOneBy({ phoneNumber });
+  //     if (!customer) {
+  //       customer = new CustomerEntity();
+  //       customer.phoneNumber = phoneNumber;
+  //       customer = await CustomerEntity.save(customer);
+  //     }
+  //   } else {
+  //     customer = await CustomerEntity.findOneBy({ id: customerId });
+  //   }
 
-      if (!store) throw new HttpException('key not found', HttpStatus.NOT_FOUND)
+  //   let companyCustomer = await CompanyCustomerEntity.findOne({ where: { customerId: customer.id, companyId: companyId }, relations: ["customer"] });
+  //   if (!companyCustomer) {
+  //     companyCustomer = new CompanyCustomerEntity();
+  //     companyCustomer.customerId = customer.id;
+  //     companyCustomer.companyId = companyId;
+  //     companyCustomer.nickname = (customer.firstName || "") + " " + (customer.lastName || "");
+  //     companyCustomer.totalPoint = 0;
+  //     // this.checkinGateway.sendNotifyCheckIn(storeId, "newCustomer", 1);
+  //     CompanyCustomerEntity.save(companyCustomer);
+  //   }
 
-      storeId = store.id;
-      companyId = store.companyId;
-      customer = await CustomerEntity.findOneBy({ id: customerId });
-    }
+  //   const setting = await StoreSettingEntity.findOne({ where: { storeId: storeId }, relations: ["store"] });
+  //   const afterDate = Date.now() - setting.allowCheckinAfter * 1000 * 60 * 60;
+  //   let checkin = await CheckInEntity.findOne({ where: { companyCustomerId: companyCustomer.id, checkInDate: MoreThanOrEqual(new Date(afterDate)) } });
 
-    let companyCustomer = await CompanyCustomerEntity.findOne({ where: { customerId: customer.id, companyId: companyId }, relations: ["customer"] });
-    if (!companyCustomer) {
-      companyCustomer = new CompanyCustomerEntity();
-      companyCustomer.customerId = customer.id;
-      companyCustomer.companyId = companyId;
-      companyCustomer.nickname = (customer.firstName || "") + " " + (customer.lastName || "");
-      companyCustomer.totalPoint = 0;
-      // this.checkinGateway.sendNotifyCheckIn(storeId, "newCustomer", 1);
-      CompanyCustomerEntity.save(companyCustomer);
-    }
+  //   if (!checkin) {
+  //     companyCustomer.totalPoint += 1;
+  //     companyCustomer.lastCheckIn = new Date();
+  //     await CompanyCustomerEntity.save(companyCustomer);
+  //     checkin = new CheckInEntity();
+  //     checkin.checkInDate = new Date();
+  //     const nanoid = customAlphabet('1234567890abcdef', 10)
+  //     checkin.stringId = nanoid();
+  //     checkin.companyCustomer = companyCustomer;
+  //     const store = await StoreEntity.findOneBy({ id: storeId });
+  //     if (store) checkin.store = store;
+  //     else throw new HttpException('Wrong authentication token', HttpStatus.UNAUTHORIZED);
 
-    const setting = await StoreSettingEntity.findOne({ where: { storeId: storeId }, relations: ["store"] });
-    const afterDate = Date.now() - setting.allowCheckinAfter * 1000 * 60 * 60;
-    let checkin = await CheckInEntity.findOne({ where: { companyCustomerId: companyCustomer.id, checkInDate: MoreThanOrEqual(new Date(afterDate)) } });
+  //     if (setting && setting.autoCheckout && setting.checkoutAfter === 0) {
+  //       checkin.checkOutDate = new Date();
+  //     }
 
-    if (!checkin) {
-      companyCustomer.totalPoint += 1;
-      companyCustomer.lastCheckIn = new Date();
-      await CompanyCustomerEntity.save(companyCustomer);
-      checkin = new CheckInEntity();
-      checkin.checkInDate = new Date();
-      const nanoid = customAlphabet('1234567890abcdef', 10)
-      checkin.stringId = nanoid();
-      checkin.companyCustomer = companyCustomer;
-      const store = await StoreEntity.findOneBy({ id: storeId });
-      if (store) checkin.store = store;
-      else throw new HttpException('Wrong authentication token', HttpStatus.UNAUTHORIZED);
+  //     await checkin.save();
+  //     companyCustomer.customer = customer;
+  //     //find booking if customer has one
+  //     const booking = await AppointmentBookingEntity
+  //       .createQueryBuilder("booking")
+  //       .leftJoin("booking.customer", "customer")
+  //       .orderBy({ date: "DESC" })
+  //       .where("booking.storeId = :storeId", { storeId })
+  //       .andWhere("customer.id = :customerId", { customerId: customer.id })
+  //       .andWhere("booking.isActive=true")
+  //       .getOne();
+  //     if (booking) AppointmentBookingEntity.update(booking.id, { isCheckIn: true });
 
-      if (setting && setting.autoCheckout && setting.checkoutAfter === 0) {
-        checkin.checkOutDate = new Date();
-      }
-
-      await checkin.save();
-      companyCustomer.customer = customer;
-      //find booking if customer has one
-      const booking = await AppointmentBookingEntity
-        .createQueryBuilder("booking")
-        .leftJoin("booking.customer", "customer")
-        .orderBy({ date: "DESC" })
-        .where("booking.storeId = :storeId", { storeId })
-        .andWhere("customer.id = :customerId", { customerId: customer.id })
-        .andWhere("booking.isActive=true")
-        .getOne();
-      if (booking) {
-        AppointmentBookingEntity.update(booking.id, { isCheckIn: true });
-
-      }
-
-      const secretKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      StoreEntity.update(storeId, { secretKey: secretKey })
-
-      return { checkIn: checkin, isAlreadyCheckIn: false };
-    } else {
-      return { checkIn: checkin, isAlreadyCheckIn: true, message: "Customer already checked in with in " + setting.allowCheckinAfter + " hours", }
-    }
-  }
+  //     return { checkIn: checkin, isAlreadyCheckIn: false };
+  //   } else {
+  //     return { checkIn: checkin, isAlreadyCheckIn: true, message: "Customer already checked in with in " + setting.allowCheckinAfter + " hours", }
+  //   }
+  // }
 
 
-  async checkinCount(companyId: number) {
-    const start = new Date();
-    const end = new Date();
-    end.setHours(0, 0, 0, 0);
+  // async checkinCount(companyId: number) {
+  //   const start = new Date();
+  //   const end = new Date();
+  //   end.setHours(0, 0, 0, 0);
 
-    const filters: any = {
-      before: start.toISOString() as any,
-      after: end.toISOString() as any,
-    };
+  //   const filters: any = {
+  //     before: start.toISOString() as any,
+  //     after: end.toISOString() as any,
+  //   };
 
-    return CompanyCustomerEntity.createQueryBuilder('company_customer')
-      .leftJoinAndSelect('company_customer.customer', 'customer')
-      .innerJoinAndSelect('company_customer.checkIn', 'checkIn')
-      .where({ companyId })
-      .andWhere('checkIn.checkInDate >= :after')
-      .andWhere('checkIn.checkInDate < :before')
-      .orderBy({ checkInDate: 'DESC' })
-      .setParameters(filters)
-      .getCount();
-  }
+  //   return CompanyCustomerEntity.createQueryBuilder('company_customer')
+  //     .leftJoinAndSelect('company_customer.customer', 'customer')
+  //     .innerJoinAndSelect('company_customer.checkIn', 'checkIn')
+  //     .where({ companyId })
+  //     .andWhere('checkIn.checkInDate >= :after')
+  //     .andWhere('checkIn.checkInDate < :before')
+  //     .orderBy({ checkInDate: 'DESC' })
+  //     .setParameters(filters)
+  //     .getCount();
+  // }
 
   async checkOut(body: CheckOutDto) {
     const booking = await AppointmentBookingEntity.createQueryBuilder('booking')
@@ -177,25 +164,25 @@ export class CheckinService {
     return newBilling
   }
 
-  async checkInCustomers(companyId: number) {
-    const start = new Date();
-    const end = new Date();
-    end.setHours(0, 0, 0, 0);
+  // async checkInCustomers(companyId: number) {
+  //   const start = new Date();
+  //   const end = new Date();
+  //   end.setHours(0, 0, 0, 0);
 
-    const filters: any = {
-      before: start.toISOString() as any,
-      after: end.toISOString() as any,
-    };
+  //   const filters: any = {
+  //     before: start.toISOString() as any,
+  //     after: end.toISOString() as any,
+  //   };
 
-    return CompanyCustomerEntity
-      .createQueryBuilder('company_customer')
-      .leftJoinAndSelect('company_customer.customer', 'customer')
-      .innerJoinAndSelect('company_customer.checkIn', 'checkIn')
-      .where({ companyId })
-      .andWhere('checkIn.checkInDate >= :after')
-      .andWhere('checkIn.checkInDate < :before')
-      .orderBy({ checkInDate: 'DESC' })
-      .setParameters(filters)
-      .getMany();
-  }
+  //   return CompanyCustomerEntity
+  //     .createQueryBuilder('company_customer')
+  //     .leftJoinAndSelect('company_customer.customer', 'customer')
+  //     .innerJoinAndSelect('company_customer.checkIn', 'checkIn')
+  //     .where({ companyId })
+  //     .andWhere('checkIn.checkInDate >= :after')
+  //     .andWhere('checkIn.checkInDate < :before')
+  //     .orderBy({ checkInDate: 'DESC' })
+  //     .setParameters(filters)
+  //     .getMany();
+  // }
 }

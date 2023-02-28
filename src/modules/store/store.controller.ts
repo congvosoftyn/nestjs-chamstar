@@ -19,8 +19,8 @@ export class StoreController {
     @Get()
     @ApiBearerAuth('access-token')
     @UseGuards(JwtAuthenticationGuard)
-    async getStores(@User('companyId') companyId: number) {
-        return this.storeService.getStores(companyId);
+    async getStores(@User('storeId') storeId: number) {
+        return this.storeService.getStores(storeId);
     }
 
     @Get('/select/:storeId')

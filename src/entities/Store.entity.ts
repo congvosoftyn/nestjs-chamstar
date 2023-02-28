@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, ManyToMany, OneToOne, ManyToOne, JoinColumn, JoinTable, Index, CreateDateColumn } from "typeorm";
-import { CompanyEntity } from "./Company.entity";
 import { CheckInEntity } from "./CheckIn.entity";
 import { StoreSettingEntity } from "./StoreSetting.entity";
 import { PictureEntity } from "./Picture.entity";
@@ -8,6 +7,8 @@ import { TagEntity } from "./Tag.entity";
 import { StaffEntity } from "./Staff.entity";
 import { AppointmentSettingEntity } from "./AppointmentSetting.entity";
 import { Field, InputType, Int, ObjectType } from "@nestjs/graphql";
+import { UserEntity } from "./User.entity";
+import { CustomerEntity } from "./Customer.entity";
 
 @ObjectType('Store')
 @InputType('StoreInput')
@@ -62,18 +63,6 @@ export class StoreEntity extends BaseEntity {
     @Field(() => String, { nullable: true })
     zipcode?: string;
 
-    @Column({ nullable: true, type: 'double' })
-    @Field(() => Int, { nullable: true })
-    latitude: number;
-
-    @Column({ nullable: true, type: 'double' })
-    @Field(() => Int, { nullable: true })
-    longitude: number;
-
-    @Column({ nullable: true })
-    @Field(() => String, { nullable: true })
-    secretKey: string;
-
     @Column({ default: true })
     @Field(() => Boolean, { defaultValue: true })
     isActive: boolean;
@@ -86,30 +75,14 @@ export class StoreEntity extends BaseEntity {
     @Field(() => String, { nullable: true })
     image: string;
 
-    @Column({ nullable: true, select: false })
-    @Field(() => Int, { nullable: true })
-    distance: number;
-
-    @Column({ nullable: true, select: false })
-    @Field(() => Int, { nullable: true })
-    rate: number;
-
-    @Column({ nullable: true, select: false })
-    @Field(() => Int, { nullable: true })
-    reviewCount: number;
-
-    @Column({ nullable: true, select: false })
-    @Field(() => Boolean, { nullable: true })
-    hasService: boolean;
-
-    @ManyToOne(type => CompanyEntity, company => company.store, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'companyId' })
-    @Field(() => CompanyEntity)
-    company: CompanyEntity;
+    @ManyToOne(type => UserEntity, user => user.stores, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'userId' })
+    @Field(() => UserEntity)
+    user: UserEntity;
 
     @Column({ type: 'int' })
     @Field(() => Int)
-    companyId: number;
+    userId: number;
 
     @OneToMany(type => CheckInEntity, checkin => checkin.store)
     @Field(() => [CheckInEntity])
@@ -122,8 +95,6 @@ export class StoreEntity extends BaseEntity {
     @OneToOne(type => AppointmentSettingEntity, appointmentSetting => appointmentSetting.store, { cascade: ["update", "insert", "remove"] })
     @Field(() => AppointmentSettingEntity)
     appointmentSetting: AppointmentSettingEntity;
-
-
 
     @ManyToMany(type => PictureEntity, { cascade: ["update", "insert", "remove"] })
     @JoinTable()
@@ -192,6 +163,10 @@ export class StoreEntity extends BaseEntity {
     @Column({ default: false })
     @Field(() => Boolean, { defaultValue: false })
     default: boolean;
+
+    @OneToMany(type => CustomerEntity, customer => customer.store)
+    @Field(() => [CustomerEntity])
+    customers: CustomerEntity[];
 
     fullAddress() {
         return `${this.address} ${this.city}, ${this.state} ${this.zipcode}`

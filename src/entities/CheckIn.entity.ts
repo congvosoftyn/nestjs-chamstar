@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, BaseEntity, JoinColumn, Column, ManyToOne } from "typeorm";
-import { CompanyCustomerEntity } from "./CompanyCustomer.entity";
 import { StoreEntity } from "./Store.entity";
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 
@@ -28,14 +27,14 @@ export class CheckInEntity extends BaseEntity {
     @Field(() => Boolean, { defaultValue: false })
     checkOutMessageSent: boolean;
 
-    @ManyToOne(type => CompanyCustomerEntity, companyCustomer => companyCustomer.checkIn, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'companyCustomerId' })
-    @Field(() => CompanyCustomerEntity)
-    companyCustomer: CompanyCustomerEntity;
+    // @ManyToOne(type => CompanyCustomerEntity, companyCustomer => companyCustomer.checkIn, { onDelete: 'CASCADE' })
+    // @JoinColumn({ name: 'companyCustomerId' })
+    // @Field(() => CompanyCustomerEntity)
+    // companyCustomer: CompanyCustomerEntity;
 
-    @Column({ type: 'int' })
-    @Field(() => Int)
-    companyCustomerId: number;
+    // @Column({ type: 'int' })
+    // @Field(() => Int)
+    // companyCustomerId: number;
 
     @ManyToOne(type => StoreEntity, store => store.checkIn, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'storeId' })

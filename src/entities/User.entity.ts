@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, BaseEntity, Unique, ManyToOne, ManyToMany, JoinTable, RelationId } from 'typeorm';
-import { CompanyEntity } from './Company.entity';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, Unique, OneToMany } from 'typeorm';
 import crypto = require('crypto');
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 import { Length, IsEmail } from 'class-validator';
+import { StoreEntity } from './Store.entity';
 
 @ObjectType('User')
 @InputType('UserInput')
@@ -36,30 +36,9 @@ export class UserEntity extends BaseEntity {
   @Field(() => Boolean, { defaultValue: true })
   isCreator: boolean;
 
-  @Column({ nullable: true, select: false })
-  @Field(() => String, { nullable: true })
-  tempPassword: string;
-
-  @Column({ nullable: true, select: false })
-  @Field(() => Date, { nullable: true })
-  tempPasswordExpire: Date;
-
-  @Column({ nullable: true })
-  @Field(() => String, { nullable: true })
-  emailVerifyCode: string;
-
-  @Column({ default: false })
-  @Field(() => Boolean, { defaultValue: false })
-  emailVerified: boolean;
-
-  @ManyToOne(type => CompanyEntity, company => company.user, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'companyId' })
-  @Field(() => CompanyEntity)
-  company: CompanyEntity;
-
-  @Column({ type: 'int' })
-  @Field(() => Int)
-  companyId: number;
+  @OneToMany(() => StoreEntity, store => store.user)
+  @Field(() => [StoreEntity])
+  stores: StoreEntity[];
 
   hashPassword() {
     const salt = crypto.randomBytes(32).toString('hex');
@@ -102,7 +81,6 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   @Field(() => String, { nullable: true })
   address: string;
-
 
   @Column({ nullable: true })
   @Field(() => String, { nullable: true })
