@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ProductEntity } from 'src/entities/Product.entity';
-import { ProductCategoryEntity } from 'src/entities/ProductCategory.entity';
+import { CategoryEntity } from 'src/entities/Category.entity';
 import { StaffEntity } from 'src/entities/Staff.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
@@ -8,7 +8,7 @@ import { PaginationDto } from 'src/shared/dto/pagination.dto';
 @Injectable()
 export class ServiceService {
     getCategories(storeId: number) {
-        return ProductCategoryEntity.createQueryBuilder('cat')
+        return CategoryEntity.createQueryBuilder('cat')
             .leftJoinAndSelect('cat.products', 'products', 'products.isService = true',)
             .orderBy('cat.orderBy', 'ASC')
             .where({ storeId: storeId, isActive: true })

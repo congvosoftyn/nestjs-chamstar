@@ -1,7 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductEntity } from 'src/entities/Product.entity';
-import { ProductCategoryEntity } from 'src/entities/ProductCategory.entity';
-import { ProductOptionEntity } from 'src/entities/ProductOption.entity';
 import { NewProductDto } from './dto/NewProduct.dto';
 import { ReOrderProductsDto } from './dto/ReOrderProducts.dto';
 import { UpdateOrderByIdDto } from './dto/UpdateOrderById.dto';

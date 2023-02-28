@@ -2,12 +2,12 @@ import { Field, InputType, Int, ObjectType, Float } from "@nestjs/graphql";
 import { BaseEntity, Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { AppointmentInfoEntity } from "./AppointmentInfo.entity";
 import { ProductEntity } from "./Product.entity";
-import { ProductCategoryEntity } from "./ProductCategory.entity";
+import { CategoryEntity } from "./Category.entity";
 
 @ObjectType('PackageCategory')
 @InputType('PackageCategoryInput')
 @Entity({ name: "package_category" })
-export class PackageCategoryEntity extends BaseEntity {
+export class PackageEntity extends BaseEntity {
     @PrimaryGeneratedColumn()
     @Field(() => Int)
     id: number;
@@ -21,10 +21,10 @@ export class PackageCategoryEntity extends BaseEntity {
     @JoinTable()
     services: [ProductEntity]
 
-    @ManyToOne(() => ProductCategoryEntity)
-    @Field(() => ProductCategoryEntity)
+    @ManyToOne(() => CategoryEntity)
+    @Field(() => CategoryEntity)
     @JoinColumn({ name: 'categoryId' })
-    category: ProductCategoryEntity;
+    category: CategoryEntity;
 
     @Column({ type: "int" })
     @Field(() => Int)

@@ -4,10 +4,10 @@ import { StoreEntity } from "./Store.entity";
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 import { PackageEntity } from "./Package.entity";
 
-@ObjectType('ProductCategory')
-@InputType('ProductCategoryInput')
+@ObjectType('Category')
+@InputType('CategoryInput')
 @Entity({ name: 'product_category', orderBy: { orderBy: 'ASC' } })
-export class ProductCategoryEntity extends BaseEntity {
+export class CategoryEntity extends BaseEntity {
 
     @PrimaryGeneratedColumn()
     @Field(() => Int)
@@ -41,4 +41,6 @@ export class ProductCategoryEntity extends BaseEntity {
     @OneToMany(() => PackageEntity, packageCategory => packageCategory.category)
     @Field(() => [PackageEntity])
     packages: [PackageEntity];
+
+
 }

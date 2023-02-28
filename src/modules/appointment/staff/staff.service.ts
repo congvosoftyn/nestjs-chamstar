@@ -1,7 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AppointmentBookingEntity } from 'src/entities/AppointmentBooking.entity';
 import { OpenHourEntity } from 'src/entities/OpenHour.entity';
-import { PackageCategoryEntity } from 'src/entities/package-category.entity';
 import { StaffEntity } from 'src/entities/Staff.entity';
 import { StaffBreakTimeEntity } from 'src/entities/StaffBreakTime.entity';
 import { StaffTimeOffEntity } from 'src/entities/StaffTimeOff.entity';
@@ -10,44 +9,13 @@ import { DataBookingI } from './dto/data-booking.interface';
 import { BookingInfo } from './dto/data-convert.dto';
 import { QueryBookingByStaffDto } from './dto/query-booking-staff.dto';
 import { QueryStaffServices } from './dto/query-staff-services.dto';
-import { QueryStaffDto } from './dto/query-staff.dto';
 import { PaginationDto } from "../../../shared/dto/pagination.dto";
 import { AddServiceToStaffDto } from './dto/add-service-to-staff.dto';
+import { PackageEntity } from 'src/entities/Package.entity';
 
 @Injectable()
 export class StaffService {
   async getStaffs(storeId: number, query: QueryStaffServices = new QueryStaffServices()) {
-    // const staffB = await StaffEntity.createQueryBuilder('s')
-    //   .leftJoinAndMapMany(
-    //     's.services',
-    //     'product',
-    //     'services',
-    //     'services.id IN (select sp.productId from `staff_services_product` sp where sp.staffId = s.id) and services.isActive = true',
-    //   )
-    //   .leftJoinAndMapMany(
-    //     's.workingHours',
-    //     'staff_working_hour',
-    //     'w',
-    //     'w.staffId = s.id',
-    //   )
-    //   .leftJoinAndMapMany(
-    //     's.breakTimes',
-    //     'staff_break_time',
-    //     'b',
-    //     'b.staffId = s.id',
-    //   )
-    //   .leftJoinAndMapMany(
-    //     's.timeOffs',
-    //     'staff_time_off',
-    //     't',
-    //     't.staffId = s.id',
-    //   )
-    //   .where('s.storeId=:storeId', { storeId })
-    //   .andWhere('s.isActive = true')
-    //   .orderBy('s.name', 'ASC')
-    //   .take(query.size)
-    //   .skip(query.page * query.size)
-    //   .getQuery();
     const [staffs, count] = await StaffEntity.createQueryBuilder('staff')
       .leftJoinAndSelect('staff.services', 'services', 'services.isActive = true',)
       .leftJoinAndSelect('staff.workingHours', 'workingHours')
@@ -70,7 +38,7 @@ export class StaffService {
     let packages = [];
 
     if (packageIds.length > 0) {
-      packages = await PackageCategoryEntity.createQueryBuilder('package')
+      packages = await PackageEntity.createQueryBuilder('package')
         .leftJoinAndSelect("package.services", "services", "services.isActive = true")
         .where("package.id in (:packageIds) ", { packageIds })
         .getRawMany();

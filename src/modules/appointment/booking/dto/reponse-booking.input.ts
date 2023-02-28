@@ -2,7 +2,7 @@ import { Field, Int, ObjectType, PartialType } from "@nestjs/graphql";
 import { AppointmentBookingStatus } from "src/entities/AppointmentBooking.entity";
 import { AppointmentLabelEntity } from "src/entities/AppointmentLabel.entity";
 import { CustomerEntity } from "src/entities/Customer.entity";
-import { PackageCategoryEntity } from "src/entities/package-category.entity";
+import { PackageEntity } from "src/entities/Package.entity";
 import { ProductEntity } from "src/entities/Product.entity";
 
 @ObjectType()
@@ -48,7 +48,7 @@ class ServiceB extends PartialType(ProductEntity) {
 }
 
 @ObjectType()
-class PackageC extends PartialType(PackageCategoryEntity) {
+class PackageC extends PartialType(PackageEntity) {
     @Field(() => Int)
     bookingInfoId: number;
 

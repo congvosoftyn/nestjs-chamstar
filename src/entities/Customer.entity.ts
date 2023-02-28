@@ -120,15 +120,6 @@ export class CustomerEntity extends BaseEntity {
     return this.countryCode + this.phoneNumber;
   }
 
-  // @ManyToOne(type => AddressEntity, { eager: true, nullable: true, cascade: ["insert", "update"] })
-  // @JoinTable({ name: 'addressId' })
-  // @Field(() => AddressEntity)
-  // address: AddressEntity;
-
-  // @Column({ type: 'int', nullable: true })
-  // @Field(() => Int, { nullable: true })
-  // addressId: number;
-
   @OneToMany(() => AddressEntity, address => address.customer, { cascade: ["insert", "update"] })
   @Field(() => [AddressEntity])
   addresses: AddressEntity[];
