@@ -50,6 +50,6 @@ export class AppointmentLabelEntity extends BaseEntity {
   billing: BillingEntity;
 
   @Field(() => Int)
-  @Column({ type: 'int',nullable: true })
+  @Column({ type: 'int', nullable: true })
   billingId: number;
 }

@@ -68,7 +68,7 @@ export class PaymentEntity extends BaseEntity {
     @Field(() => BillingEntity)
     billing: BillingEntity;
 
-    @Column({ type: 'int'})
-    @Field(() => Int )
+    @Column({ type: 'int',nullable: true})
+    @Field(() => Int ,{nullable: true})
     billingId: number;
 }

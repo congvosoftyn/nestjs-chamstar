@@ -116,6 +116,7 @@ export class BookingService {
             .leftJoinAndSelect("bookingInfo.staff", "staff")
             .leftJoinAndSelect("bookingInfo.packages", "packages")
             .leftJoinAndSelect("packages.services", "_services", "_services.isService = true")
+            .leftJoinAndSelect("_services.tax", "_tax")
             .leftJoinAndSelect("booking.label", "label")
             .leftJoinAndSelect("booking.customer", "customer")
             .where('booking.id = :id', { id })

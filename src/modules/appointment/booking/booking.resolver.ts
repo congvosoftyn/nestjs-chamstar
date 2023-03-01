@@ -15,6 +15,7 @@ import { DataStoredInToken } from 'src/shared/interfaces/DataStoreInToken.interf
 import { AppointmentBookingDto } from './dto/appointment-booking.dto';
 import { UpdateBookingInput } from './dto/update-booking.input';
 import { ReponseBookingInput } from './dto/reponse-booking.input';
+import GraphQLJSON from 'graphql-type-json';
 const pubSub = new PubSub();
 const NEW_BOOKING_EVENT = 'newBooking';
 const UPDATE_BOOKING_EVENT = 'updateBooking';
@@ -25,6 +26,7 @@ export class BookingResolver {
   constructor(private readonly bookingService: BookingService) { }
 
   @Query(() => [ReponseBookingInput])
+  // @Query(() => GraphQLJSON)
   async getAppointments(@User('storeId') storeId: number, @User('companyId') companyId: number,) {
     return this.bookingService.getAppointments(storeId, companyId);
   }

@@ -26,8 +26,8 @@ export class BillingDetailEntity extends BaseEntity {
     @JoinColumn({ name: 'billingId' })
     billing: BillingEntity;
 
-    @Column({ type: "int" })
-    @Field(() => Int)
+    @Column({ type: "int",nullable: true })
+    @Field(() => Int,{nullable:true})
     billingId: number;
 
     @OneToMany(() => AppointmentBookingEntity, booking => booking.billingDetail, { eager: true })

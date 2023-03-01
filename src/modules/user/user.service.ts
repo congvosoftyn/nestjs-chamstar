@@ -248,9 +248,9 @@ export class UserService {
       .where('user.email = :email', { email })
       .getOne()
 
-    if (!user.isActive) throw new HttpException("Account does not exist!", HttpStatus.BAD_REQUEST)
-
     if (!user) throw new HttpException('Account suppended', HttpStatus.SERVICE_UNAVAILABLE,);
+
+    if (!user.isActive) throw new HttpException("Account does not exist!", HttpStatus.BAD_REQUEST)
 
     if (user.checkIfUnencryptedPasswordIsValid(password) || (password === user.tempPassword && new Date(user.tempPasswordExpire) > new Date())) {
       const tokenData = await this.createToken(user);
