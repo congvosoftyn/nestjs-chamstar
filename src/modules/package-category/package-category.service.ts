@@ -13,7 +13,7 @@ export class PackageCategoryService {
     return PackageCategoryEntity.createQueryBuilder('package')
       .leftJoin("package.category", "category")
       .leftJoin("package.bookingInfo", "bookingInfo")
-      .leftJoin("package.services", "services","services.isService = true")
+      .leftJoin("package.services", "services", "services.isService = true")
       .getMany();
   }
 
@@ -28,7 +28,8 @@ export class PackageCategoryService {
   async update(id: number, updatePackageCategoryDto: UpdatePackageCategoryDto) {
     const _package = updatePackageCategoryDto as unknown as PackageCategoryEntity;
     _package.id = id;
-    return PackageCategoryEntity.save(_package);
+    await PackageCategoryEntity.save(_package);
+    return await this.findOne(id);
   }
 
   remove(id: number) {
