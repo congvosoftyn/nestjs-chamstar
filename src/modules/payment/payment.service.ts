@@ -1,3 +1,4 @@
+import { AppointmentBookingEntity, AppointmentBookingStatus } from 'src/entities/AppointmentBooking.entity';
 import { forwardRef, HttpException, HttpStatus, Inject, Injectable, NotFoundException, } from '@nestjs/common';
 import { BillingEntity } from 'src/entities/Billing.entity';
 import { CompanyEntity } from 'src/entities/Company.entity';
@@ -8,6 +9,7 @@ import { AddNewCardDto } from './dto/AddNewCard.dto';
 import { ChargePaymentDto } from './dto/ChargePayment.dto';
 import { PaymentGateway } from './payment.gateway';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { BillingDetailEntity } from 'src/entities/BillingDetailt.entity';
 
 @Injectable()
 export class PaymentService {
@@ -18,17 +20,23 @@ export class PaymentService {
   ) { }
 
   async payment(storeId: number, data: CreatePaymentDto) {
-    let payment = await PaymentEntity.save(<PaymentEntity>{
+    PaymentEntity.save(<PaymentEntity>{
       payment_method: data.payment_method,
       status: "succeeded",
       amount: data.amount,
       stripeId: null,
+      billingId: data.billId
     })
-    if (payment) {
-      await BillingEntity.createQueryBuilder().update({ isPaid: true }).where("id = :id", { id: data.billId }).execute()
-    }
 
-    return await BillingEntity.createQueryBuilder("bill")
+    await BillingEntity.createQueryBuilder().update({ isPaid: true }).where("id = :id", { id: data.billId }).execute()
+
+    let billDetail = await BillingDetailEntity.createQueryBuilder('buildDetail')
+      .select(["buildDetail.bookingId", "buildDetail.id"])
+      .where("buildDetail.billingId = :billingId", { billingId: data.billId }).getOne();
+
+    AppointmentBookingEntity.createQueryBuilder().update({ status: AppointmentBookingStatus.completed }).where("id = :id", { id: billDetail.bookingId }).execute();
+
+    return BillingEntity.createQueryBuilder("bill")
       .leftJoinAndSelect("bill.billingDetails", "billingDetails")
       .where("bill.id = :id and bill.storeId = :storeId ", { id: data.billId, storeId: storeId })
       .getOne()
@@ -89,7 +97,7 @@ export class PaymentService {
     }
   };
 
- 
+
   private async checkPaymentGateway() {
     let paymentGateway = await SiteSettingEntity.findOne({ where: { key: 'paymentGateway' }, });
     if (!paymentGateway) {

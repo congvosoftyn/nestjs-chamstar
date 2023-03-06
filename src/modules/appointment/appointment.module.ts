@@ -15,11 +15,11 @@ import { BookingAppModule } from './booking-app/booking-app.module';
     StaffModule,
     ServiceModule,
     BookingModule,
-    BookingWebModule,
+    // BookingWebModule,
     ActivityModule,
     ReportModule,
     LabelModule,
-    BookingAppModule,
+    // BookingAppModule,
   ]
 })
 export class AppointmentModule { }
