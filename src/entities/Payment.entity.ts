@@ -63,12 +63,12 @@ export class PaymentEntity extends BaseEntity {
     @Field(() => String, { nullable: true })
     status: string;
 
-    @ManyToOne(type => BillingEntity, { onDelete: 'CASCADE' })
+    @ManyToOne(type => BillingEntity, bill => bill.payments, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'billingId' })
     @Field(() => BillingEntity)
     billing: BillingEntity;
 
-    @Column({ type: 'int',nullable: true})
-    @Field(() => Int ,{nullable: true})
+    @Column({ type: 'int', nullable: true })
+    @Field(() => Int, { nullable: true })
     billingId: number;
 }

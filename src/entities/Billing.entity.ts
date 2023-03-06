@@ -1,3 +1,4 @@
+import { PaymentEntity } from 'src/entities/Payment.entity';
 import { Entity, PrimaryGeneratedColumn, BaseEntity, Column, CreateDateColumn, UpdateDateColumn, JoinColumn, ManyToOne, OneToMany, } from 'typeorm';
 import { ObjectType, Field, Int, InputType, Float } from '@nestjs/graphql';
 import { CustomerEntity } from './Customer.entity';
@@ -78,6 +79,10 @@ export class BillingEntity extends BaseEntity {
   @Column({ default: false })
   @Field(() => Boolean, { defaultValue: false })
   isPaid: boolean;
+
+  @OneToMany(() => PaymentEntity, payment => payment.billing)
+  @Field(() => [PaymentEntity], { nullable: true })
+  payments: PaymentEntity[];
 
   // @ManyToOne(type => SubscriptionEntity, { onDelete: 'CASCADE' })
   // @JoinColumn({ name: 'subscriptionId' })
