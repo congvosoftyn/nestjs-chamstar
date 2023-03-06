@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PackageCategoryEntity } from 'src/entities/package-category.entity';
 import { CreatePackageCategoryDto } from './dto/create-package-category.dto';
 import { UpdatePackageCategoryDto } from './dto/update-package-category.dto';
+import { ProductCategoryEntity } from 'src/entities/ProductCategory.entity';
 
 @Injectable()
 export class PackageCategoryService {
@@ -28,8 +29,12 @@ export class PackageCategoryService {
   async update(id: number, updatePackageCategoryDto: UpdatePackageCategoryDto) {
     const _package = updatePackageCategoryDto as unknown as PackageCategoryEntity;
     _package.id = id;
-    await PackageCategoryEntity.save(_package);
-    return await this.findOne(id);
+    let category = await ProductCategoryEntity.findOne({where:{id: updatePackageCategoryDto.categoryId}});
+    if(!category) throw new NotFoundException("Category exists!");
+    _package.category = category
+    return await PackageCategoryEntity.save(_package);
+    // await PackageCategoryEntity.save(_package);
+    // return await this.findOne(id);
   }
 
   remove(id: number) {
