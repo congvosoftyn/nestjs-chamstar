@@ -139,7 +139,7 @@ export class CustomerService {
       query = query.andWhere("(customer.firstName LIKE :keywork OR customer.lastName LIKE :keywork OR customer.phoneNumber LIKE :keywork)", { keywork: `%${search}%` })
         .orderBy('customer.firstName')
     } else {
-      query = query.orderBy('cCustomer.created', 'DESC')
+      query = query.orderBy('customer.created', 'DESC')
     }
 
     return query.getMany()
