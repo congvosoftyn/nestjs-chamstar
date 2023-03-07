@@ -1,6 +1,5 @@
 import { Module, } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CheckInEntity } from 'src/entities/CheckIn.entity';
 import { OpenHourEntity } from 'src/entities/OpenHour.entity';
 import { PictureEntity } from 'src/entities/Picture.entity';
 import { ProductEntity } from 'src/entities/Product.entity';
@@ -14,7 +13,6 @@ import { StoreService } from './store.service';
   imports: [
     TypeOrmModule.forFeature([
       StoreEntity,
-      CheckInEntity,
       OpenHourEntity,
       PictureEntity,
       ProductEntity,

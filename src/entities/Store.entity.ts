@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, ManyToMany, OneToOne, ManyToOne, JoinColumn, JoinTable, Index, CreateDateColumn } from "typeorm";
-import { CheckInEntity } from "./CheckIn.entity";
 import { StoreSettingEntity } from "./StoreSetting.entity";
 import { PictureEntity } from "./Picture.entity";
 import { OpenHourEntity } from "./OpenHour.entity";
@@ -84,9 +83,6 @@ export class StoreEntity extends BaseEntity {
     @Field(() => Int)
     userId: number;
 
-    @OneToMany(type => CheckInEntity, checkin => checkin.store)
-    @Field(() => [CheckInEntity])
-    checkIn: CheckInEntity[];
 
     @OneToOne(type => StoreSettingEntity, setting => setting.store,{ cascade: ["update", "insert", "remove"] })
     @Field(() => StoreSettingEntity)

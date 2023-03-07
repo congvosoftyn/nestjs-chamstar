@@ -96,13 +96,6 @@ export class StoreController {
         return this.storeService.getWalletDetail(id);
     }
 
-    @Get('/checkin')
-    @ApiBearerAuth('customer-token')
-    @UseGuards(JwtCustomerAuthGuard)
-    async checkin(@User('customerId') customerId: number) {
-        return this.storeService.getCheckin(customerId);
-    }
-
     @Get('/categories')
     @ApiBearerAuth('customer-token')
     @UseGuards(JwtCustomerAuthGuard)

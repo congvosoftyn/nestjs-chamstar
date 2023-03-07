@@ -1,13 +1,6 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { CheckInEntity } from 'src/entities/CheckIn.entity';
-import { CustomerEntity } from 'src/entities/Customer.entity';
-import { StoreEntity } from 'src/entities/Store.entity';
-import { StoreSettingEntity } from 'src/entities/StoreSetting.entity';
-import { MoreThanOrEqual } from "typeorm";
-import { customAlphabet } from 'nanoid'
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AppointmentBookingEntity } from 'src/entities/AppointmentBooking.entity';
 import { CheckOutDto } from './dto/CheckOut.dto';
-import { CheckInDto } from './dto/CheckIn.dto';
 import { BillingEntity } from 'src/entities/Billing.entity';
 import { BookingService } from '../appointment/booking/booking.service';
 import { BillingDetailEntity } from 'src/entities/BillingDetailt.entity';

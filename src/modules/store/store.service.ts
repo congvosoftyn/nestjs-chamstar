@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CheckInEntity } from 'src/entities/CheckIn.entity';
 import { OpenHourEntity } from 'src/entities/OpenHour.entity';
 import { PictureEntity } from 'src/entities/Picture.entity';
 import { ProductEntity } from 'src/entities/Product.entity';
@@ -200,16 +199,6 @@ export class StoreService {
             refreshToken: jwt.sign(dataStoredInToken, REFRESH_TOKEN_SECRET, { expiresIn: REFRESH_TOKEN_LIFE_EXPIRES }),
         };
     }
-
-    async getCheckin(customerId: number) {
-        return CheckInEntity.createQueryBuilder('checkin')
-            .leftJoinAndSelect('checkin.store', 'store')
-            .leftJoinAndSelect('checkin.companyCustomer', 'companyCustomer')
-            .where('companyCustomer.customerId = :customerId', { customerId })
-            .orderBy('checkin.checkInDate', 'DESC')
-            .getMany();
-    }
-
 
     async getWalletDetail(id: number) {
         return StoreEntity.createQueryBuilder('store')

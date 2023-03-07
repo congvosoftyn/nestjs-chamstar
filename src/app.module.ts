@@ -25,7 +25,7 @@ import { NotifyModule } from './modules/notify/notify.module';
       port: +process.env.DB_PORT || 3306,
       username: process.env.DB_USERNAME || 'root',
       password: process.env.DB_PASSWORD || 'admin123',
-      database: process.env.DB_NAME || 'charmsta',
+      database: process.env.DB_NAME || 'dbdev',
       charset: 'utf8mb4',
       entities: [__dirname + '/**/**.entity{.ts,.js}'],
       synchronize: true,
