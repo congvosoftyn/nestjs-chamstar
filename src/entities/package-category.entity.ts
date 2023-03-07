@@ -17,7 +17,7 @@ export class PackageCategoryEntity extends BaseEntity {
     name: string;
 
     @ManyToMany(() => ProductEntity, product => product.packageCategory)
-    @Field(() => [ProductEntity] || null, {nullable: true})
+    @Field(() => [ProductEntity] || null, { nullable: true })
     @JoinTable()
     services: [ProductEntity]
 
@@ -30,7 +30,7 @@ export class PackageCategoryEntity extends BaseEntity {
     @Field(() => Int)
     categoryId: number;
 
-    @Column()
+    @Column({ type: "float" })
     @Field(() => Float)
     price: number;
 
