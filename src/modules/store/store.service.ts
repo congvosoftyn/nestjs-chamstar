@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { OpenHourEntity } from 'src/entities/OpenHour.entity';
-import { PictureEntity } from 'src/entities/Picture.entity';
 import { ProductEntity } from 'src/entities/Product.entity';
 import { StoreEntity } from 'src/entities/Store.entity';
 import { DataStoredInToken } from 'src/shared/interfaces/DataStoreInToken.interface';
@@ -115,7 +114,7 @@ export class StoreService {
 
 
     async getWallet(customerId: number, skip: number, take: number) {
-        return await StoreEntity.createQueryBuilder('store')
+        return StoreEntity.createQueryBuilder('store')
             .leftJoinAndSelect('store.company', 'company')
             .leftJoinAndSelect('company.companyCustomer', 'companyCustomer')
             .leftJoinAndSelect('store.rewards', 'rewards')
@@ -129,15 +128,6 @@ export class StoreService {
     async uploadImage(body: UploadImageDto, customerId: number, storeId: number) {
         const pictures = body.pictures;
         const store = await StoreEntity.findOne({ where: { id: storeId }, relations: ['pictures'] });
-        for (const element of pictures) {
-            let picture = new PictureEntity();
-            picture.picture = element.image;
-            // picture.customerId = customerId;
-            picture.thumbnail = element.thumb;
-            await picture.save();
-            store.pictures.push(picture);
-
-        }
         await StoreEntity.save(store);
         return { message: 'Upload succeeded' }
     }
@@ -153,16 +143,6 @@ export class StoreService {
 
     async editStore(body: EditStoreDto, companyId: number) {
         const store = body as StoreEntity;
-
-        if (store.pictures && store.pictures.some(p => (!p.id))) {
-            for (let element of store.pictures.filter(p => (!p.id))) {
-                let picture = new PictureEntity();
-                picture.picture = element.picture;
-                picture.thumbnail = element.thumbnail;
-                element = await picture.save();
-                //   store.pictures.push(picture);
-            }
-        }
 
         //init default store appointment setting
         const appSetting = new AppointmentSettingEntity();

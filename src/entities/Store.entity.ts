@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, ManyToMany, OneToOne, ManyToOne, JoinColumn, JoinTable, Index, CreateDateColumn } from "typeorm";
 import { StoreSettingEntity } from "./StoreSetting.entity";
-import { PictureEntity } from "./Picture.entity";
 import { OpenHourEntity } from "./OpenHour.entity";
 import { TagEntity } from "./Tag.entity";
 import { StaffEntity } from "./Staff.entity";
@@ -83,7 +82,6 @@ export class StoreEntity extends BaseEntity {
     @Field(() => Int)
     userId: number;
 
-
     @OneToOne(type => StoreSettingEntity, setting => setting.store,{ cascade: ["update", "insert", "remove"] })
     @Field(() => StoreSettingEntity)
     storeSetting: StoreSettingEntity;
@@ -91,11 +89,6 @@ export class StoreEntity extends BaseEntity {
     @OneToOne(type => AppointmentSettingEntity, appointmentSetting => appointmentSetting.store, { cascade: ["update", "insert", "remove"] })
     @Field(() => AppointmentSettingEntity)
     appointmentSetting: AppointmentSettingEntity;
-
-    @ManyToMany(type => PictureEntity, { cascade: ["update", "insert", "remove"] })
-    @JoinTable()
-    @Field(() => [PictureEntity])
-    pictures: PictureEntity[];
 
     @OneToMany(type => OpenHourEntity, openHour => openHour.store, { cascade: ["update", "insert", "remove"] })
     @Field(() => [OpenHourEntity])
@@ -115,26 +108,10 @@ export class StoreEntity extends BaseEntity {
     @JoinTable()
     @Field(() => [StaffEntity])
     staffs: StaffEntity[];
-
-    @Column({ nullable: true })
-    @Field(() => String, { nullable: true })
-    website: string;
-
-    @Column("simple-array", { default: "" })
-    @Field(() => [String], { defaultValue: [] })
-    pushTokens: string[];
-
+   
     @CreateDateColumn({ precision: null, type: "timestamp" })
     @Field(() => Date)
     created: Date;
-
-    @Column({ default: false })
-    @Field(() => Boolean, { defaultValue: false })
-    imported: boolean;
-
-    @Column("simple-array", { default: "" })
-    @Field(() => [String], { defaultValue: [] })
-    types: string[];
 
     @Column({ default: 'America/Chicago' })
     @Field(() => String, { defaultValue: 'America/Chicago' })
