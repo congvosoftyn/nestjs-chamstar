@@ -41,6 +41,4 @@ export class CategoryEntity extends BaseEntity {
     @OneToMany(() => PackageEntity, packageCategory => packageCategory.category)
     @Field(() => [PackageEntity])
     packages: [PackageEntity];
-
-
 }

@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, UnauthorizedException, } from '@nestjs/common';
 import { LIFE_SECRET, REFRESH_TOKEN_LIFE_EXPIRES, REFRESH_TOKEN_SECRET, SECRET, TOKEN_LIFE_EXPIRES, } from 'src/config';
-import { CompanySettingEntity } from 'src/entities/CompanySetting.entity';
+// import { CompanySettingEntity } from 'src/entities/CompanySetting.entity';
 import { OpenHourEntity } from 'src/entities/OpenHour.entity';
 import { StoreEntity } from 'src/entities/Store.entity';
 import { StoreSettingEntity } from 'src/entities/StoreSetting.entity';
@@ -66,11 +66,6 @@ export class UserService {
     }
     OpenHourEntity.save(openHours);
 
-    const companySetting = new CompanySettingEntity();
-    companySetting.storeId = _store.id;
-
-    CompanySettingEntity.save(companySetting);
-
     // create AppointmentSetting
     const appSetting = new AppointmentSettingEntity();
     appSetting.storeId = _store.id;
@@ -114,7 +109,7 @@ export class UserService {
     user.email = email;
     user.password = password;
     user.hashPassword();
-  
+
     store = await StoreEntity.save(store);
     store.openHours = [];
 
@@ -128,22 +123,17 @@ export class UserService {
       store.openHours.push(openHour);
     }
 
-    const companySetting = new CompanySettingEntity();
-    companySetting.storeId = store.id;
-
     // create AppointmentSetting
     const appSetting = new AppointmentSettingEntity();
     appSetting.storeId = store.id;
     appSetting.save();
-
-    await CompanySettingEntity.save(companySetting);
 
     const storeSetting = new StoreSettingEntity();
     storeSetting.storeId = store.id;
     storeSetting.save();
 
     user.save();
- 
+
     return store;
   }
 
@@ -481,14 +471,8 @@ export class UserService {
   }
 
   async createStore(body: CreateStoreDto) {
-    const store = await StoreEntity.save(<StoreEntity>{
-      name: body ? body.name ? body.name : 'string' : 'string',
-    });
-
-    CompanySettingEntity.save(<CompanySettingEntity>{ storeId: store.id })
-
+    const store = await StoreEntity.save(<StoreEntity>{ name: body ? body.name ? body.name : 'string' : 'string', });
     AppointmentSettingEntity.save(<AppointmentSettingEntity>{ storeId: store.id })
-
     StoreSettingEntity.save(<StoreSettingEntity>{ storeId: store.id })
 
     return store;
