@@ -15,6 +15,7 @@ import { UpdateCompanyCustomerDto } from './dto/update-comapny-customer.dto';
 import { AddStoreDto } from './dto/AddStore.dto';
 import { validate } from 'class-validator';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { PaginationDto } from 'src/shared/dto/pagination.dto';
 
 @Injectable()
 export class CustomerService {
@@ -127,13 +128,17 @@ export class CustomerService {
 
     let cCustomers = await CompanyCustomerEntity.find({ where: { companyId: companyId }, select: ["id", "customerId", "companyId"] });
     let customerIds = cCustomers.map((cCustomer) => cCustomer.customerId)
+
     let query = CustomerEntity
       .createQueryBuilder('customer')
       .leftJoinAndSelect('customer.addresses', 'addresses')
       .leftJoinAndSelect('customer.companyCustomer', 'cCustomer')
-      .where('customer.id in (:id)', { id: customerIds })
       .take(size)
       .skip(page * size)
+
+    if (customerIds.length > 0) {
+      query = query.where('customer.id in (:ids)', { ids: customerIds })
+    }
 
     if (search) {
       query = query.andWhere("(customer.firstName LIKE :keywork OR customer.lastName LIKE :keywork OR customer.phoneNumber LIKE :keywork)", { keywork: `%${search}%` })
@@ -142,7 +147,8 @@ export class CustomerService {
       query = query.orderBy('customer.created', 'DESC')
     }
 
-    return query.getMany()
+    const [customers, count] = await query.getManyAndCount()
+    return new PaginationDto(customers, count, page, size);
   }
 
   getCustomerById(id: number) {
@@ -202,7 +208,7 @@ export class CustomerService {
     customer.lastName = _customer.lastName ? `${_customer.lastName[0].toUpperCase()}${_customer.lastName.slice(1).toLowerCase()}` : null;
 
 
-    return await customer.save();
+    return customer.save();
   }
 
   async updateCompanyCustomer(updateCompanyCustomer: UpdateCompanyCustomerDto) {
@@ -213,11 +219,9 @@ export class CustomerService {
 
   async updateCustomer(updateCustomer: UpdateCustomerDto) {
     const _address = updateCustomer.address as AddressEntity;
-    const addressId = updateCustomer.addressId;
     const companyCustomers = updateCustomer.companyCustomers;
     delete updateCustomer.address;
     delete updateCustomer.companyCustomers;
-    delete updateCustomer.addressId;
 
     if (companyCustomers && companyCustomers.length > 0) {
       let companyCustomer = companyCustomers[0];
@@ -225,24 +229,22 @@ export class CustomerService {
       await CompanyCustomerEntity.createQueryBuilder().update({ nickname: nickname }).where("id = :id", { id: companyCustomer.id }).execute()
     }
 
-    if (_address) {
-      if (addressId) {
-        let updateAddress = { ..._address, customerId: updateCustomer.id }
-        AddressEntity.createQueryBuilder().update(updateAddress).where("id = :id", { id: addressId }).execute();
-      } else {
-        AddressEntity.save(<AddressEntity>{
-          address: _address.address,
-          address2: _address.address2,
-          city: _address.city,
-          state: _address.state,
-          zipcode: _address.zipcode,
-          country: _address.country,
-          customerId: updateCustomer.id
-        })
-      }
+    const address = await AddressEntity.findOne({ where: { customerId: updateCustomer.id } })
+
+    if (address) {
+      AddressEntity.createQueryBuilder().update(_address).where("customerId = :customerId", { customerId: updateCustomer.id }).execute();
+    } else {
+      AddressEntity.save(<AddressEntity>{
+        address: _address.address,
+        address2: _address.address2,
+        city: _address.city,
+        state: _address.state,
+        zipcode: _address.zipcode,
+        country: _address.country,
+        customerId: updateCustomer.id
+      })
     }
 
-    // await CustomerEntity.createQueryBuilder().update(updateCustomer).where("id = :id",{id: updateCustomer.id}).execute()
     return CustomerEntity.save(updateCustomer)
   }
 

@@ -19,7 +19,6 @@ export class UpdateCustomerDto {
     pinterest?: string;
     website?: string;
     description?: string;
-    addressId?: number;
     address?: AddressDto;
     companyCustomers?: UpdateCompanyCustomerDto[];
 }
