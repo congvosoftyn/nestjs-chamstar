@@ -147,8 +147,9 @@ export class CustomerService {
       query = query.orderBy('customer.created', 'DESC')
     }
 
-    const [customers, count] = await query.getManyAndCount()
-    return new PaginationDto(customers, count, page, size);
+    // const [customers, count] = await query.getManyAndCount()
+    // return new PaginationDto(customers, count, page, size);
+    return query.getMany()
   }
 
   getCustomerById(id: number) {
@@ -188,7 +189,7 @@ export class CustomerService {
   }
 
   async getClientCustomer(customerId: number) {
-    return await CustomerEntity.findOneBy({ id: customerId });
+    return CustomerEntity.findOneBy({ id: customerId });
   }
 
   async updateFirebaseToken(token: string, customerId: number) {
