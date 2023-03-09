@@ -133,7 +133,7 @@ export class CustomerService {
       .createQueryBuilder('customer')
       .leftJoinAndSelect('customer.addresses', 'addresses')
       .leftJoinAndSelect('customer.companyCustomer', 'cCustomer',)
-      .where('cCustomer.companyId = :companyId',{ companyId: companyId })
+      .where('cCustomer.companyId = :companyId', { companyId: companyId })
       .take(size)
       .skip(page * size)
 
@@ -148,13 +148,13 @@ export class CustomerService {
       query = query.orderBy('customer.created', 'DESC')
     }
 
-    // const [customers, count] = await query.getManyAndCount()
-    // return new PaginationDto(customers, count, page, size);
-    return query.getMany()
+    const [customers, count] = await query.getManyAndCount()
+    return new PaginationDto(customers, count, page, size);
+    // return query.getMany()
   }
 
   getCustomerById(id: number) {
-    return CustomerEntity.findOneOrFail({ where: { id } });
+    return CustomerEntity.findOneOrFail({ where: { id }, relations:["addresses"] });
   }
 
   async getCompanyCustomerByCustomerId(id: number, companyId: number) {
@@ -233,18 +233,20 @@ export class CustomerService {
 
     const address = await AddressEntity.findOne({ where: { customerId: updateCustomer.id } })
 
-    if (address) {
-      AddressEntity.createQueryBuilder().update(_address).where("customerId = :customerId", { customerId: updateCustomer.id }).execute();
-    } else {
-      AddressEntity.save(<AddressEntity>{
-        address: _address.address,
-        address2: _address.address2,
-        city: _address.city,
-        state: _address.state,
-        zipcode: _address.zipcode,
-        country: _address.country,
-        customerId: updateCustomer.id
-      })
+    if (_address) {
+      if (address) {
+        AddressEntity.createQueryBuilder().update(_address).where("customerId = :customerId", { customerId: updateCustomer.id }).execute();
+      } else {
+        AddressEntity.save(<AddressEntity>{
+          address: _address.address,
+          address2: _address.address2,
+          city: _address.city,
+          state: _address.state,
+          zipcode: _address.zipcode,
+          country: _address.country,
+          customerId: updateCustomer.id
+        })
+      }
     }
 
     return CustomerEntity.save(updateCustomer)
