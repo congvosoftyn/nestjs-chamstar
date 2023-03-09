@@ -134,8 +134,9 @@ export class CustomerService {
       .leftJoinAndSelect('customer.addresses', 'addresses')
       .leftJoinAndSelect('customer.companyCustomer', 'cCustomer',)
       .where('cCustomer.companyId = :companyId', { companyId: companyId })
-      .take(size)
+      .groupBy('customer.id, addresses.id, cCustomer.id')
       .skip(page * size)
+      .take(size)
 
     if (customerIds.length > 0) {
       query = query.andWhere('customer.id in (:ids)', { ids: customerIds })
@@ -148,9 +149,9 @@ export class CustomerService {
       query = query.orderBy('customer.created', 'DESC')
     }
 
-    const [customers, count] = await query.getManyAndCount()
-    return new PaginationDto(customers, count, page, size);
-    // return query.getMany()
+    // const [customers, count] = await query.getManyAndCount()
+    // return new PaginationDto(customers, count, page, size);
+    return query.getMany()
   }
 
   getCustomerById(id: number) {
@@ -233,8 +234,8 @@ export class CustomerService {
 
     const address = await AddressEntity.findOne({ where: { customerId: updateCustomer.id } })
 
-    if (_address) {
-      if (address) {
+    if (_address ) {
+      if (address && Object.keys(_address).length !== 0) {
         AddressEntity.createQueryBuilder().update(_address).where("customerId = :customerId", { customerId: updateCustomer.id }).execute();
       } else {
         AddressEntity.save(<AddressEntity>{
