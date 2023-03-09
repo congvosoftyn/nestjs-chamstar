@@ -132,12 +132,13 @@ export class CustomerService {
     let query = CustomerEntity
       .createQueryBuilder('customer')
       .leftJoinAndSelect('customer.addresses', 'addresses')
-      .leftJoinAndSelect('customer.companyCustomer', 'cCustomer')
+      .leftJoinAndSelect('customer.companyCustomer', 'cCustomer',)
+      .where('cCustomer.companyId = :companyId',{ companyId: companyId })
       .take(size)
       .skip(page * size)
 
     if (customerIds.length > 0) {
-      query = query.where('customer.id in (:ids)', { ids: customerIds })
+      query = query.andWhere('customer.id in (:ids)', { ids: customerIds })
     }
 
     if (search) {
